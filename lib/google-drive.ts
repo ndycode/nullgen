@@ -49,25 +49,46 @@ class GoogleDriveStorage {
             throw new Error("Google Drive not configured");
         }
 
-        console.log(`Uploading file: ${fileName} (${buffer.length} bytes) to folder: ${this.folderId}`);
+        console.log(`Uploading file: ${fileName} (${buffer.length} bytes)`);
 
         // Convert buffer to readable stream
         const stream = new Readable();
         stream.push(buffer);
         stream.push(null);
 
-        const response = await this.drive.files.create({
-            requestBody: {
-                name: fileName,
-                parents: [this.folderId],
-            },
-            media: {
-                mimeType,
-                body: stream,
-            },
-            fields: "id, webViewLink",
-            supportsAllDrives: true,
-        });
+        // Try uploading - first with parent folder, then without if it fails
+        let response;
+        try {
+            response = await this.drive.files.create({
+                requestBody: {
+                    name: fileName,
+                    ...(this.folderId ? { parents: [this.folderId] } : {}),
+                },
+                media: {
+                    mimeType,
+                    body: stream,
+                },
+                fields: "id, webViewLink",
+                supportsAllDrives: true,
+            });
+        } catch (error: unknown) {
+            console.error("Upload with folder failed, trying without folder:", error);
+            // Retry without parent folder
+            const stream2 = new Readable();
+            stream2.push(buffer);
+            stream2.push(null);
+
+            response = await this.drive.files.create({
+                requestBody: {
+                    name: fileName,
+                },
+                media: {
+                    mimeType,
+                    body: stream2,
+                },
+                fields: "id, webViewLink",
+            });
+        }
 
         if (!response.data.id) {
             throw new Error("Failed to upload file to Google Drive");
