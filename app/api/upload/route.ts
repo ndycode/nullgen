@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { put, del } from "@vercel/blob";
 import { googleDriveStorage } from "@/lib/google-drive";
 import { fileStore, FileMetadata } from "@/lib/file-store";
 
@@ -25,8 +26,14 @@ async function cleanupExpired() {
     for (const [code, file] of fileStore.entries()) {
         if (file.expiresAt < now || (file.maxDownloads !== Infinity && file.downloadCount >= file.maxDownloads)) {
             // Delete from storage
-            if (file.storageType === "gdrive") {
-                await googleDriveStorage.deleteFile(file.filename).catch(console.error);
+            try {
+                if (file.storageType === "gdrive") {
+                    await googleDriveStorage.deleteFile(file.filename);
+                } else if (file.storageType === "blob") {
+                    await del(file.filename);
+                }
+            } catch (e) {
+                console.error("Error deleting file:", e);
             }
             fileStore.delete(code);
         }
@@ -64,13 +71,11 @@ export async function POST(request: NextRequest) {
         let mimeType: string;
 
         if (files.length === 1) {
-            // Single file
             const file = files[0];
             fileName = file.name;
             mimeType = file.type || "application/octet-stream";
             buffer = Buffer.from(await file.arrayBuffer());
         } else {
-            // Multiple files - for now just take the first file
             const file = files[0];
             fileName = `${files.length}_files_bundle.zip`;
             mimeType = "application/zip";
@@ -80,10 +85,11 @@ export async function POST(request: NextRequest) {
         // Calculate expiry
         const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-        // Try to upload to Google Drive first, fall back to local storage
-        let storageType: "local" | "gdrive" = "local";
-        let storedFilename: string;
+        // Try storage options in order: Google Drive -> Vercel Blob -> Local
+        let storageType: "local" | "gdrive" | "blob" = "local";
+        let storedFilename: string = "";
 
+        // Try Google Drive first
         if (googleDriveStorage.isConfigured()) {
             try {
                 const result = await googleDriveStorage.uploadFile(buffer, `${code}_${fileName}`, mimeType);
@@ -91,13 +97,35 @@ export async function POST(request: NextRequest) {
                 storageType = "gdrive";
                 console.log(`File uploaded to Google Drive: ${result.fileId}`);
             } catch (error) {
-                console.error("Google Drive upload failed, falling back to local storage:", error);
-                storageType = "local";
-                storedFilename = await saveLocally(buffer, fileName);
+                console.error("Google Drive upload failed:", error);
             }
-        } else {
-            // Use local storage
-            storedFilename = await saveLocally(buffer, fileName);
+        }
+
+        // Try Vercel Blob if Google Drive failed
+        if (!storedFilename && process.env.BLOB_READ_WRITE_TOKEN) {
+            try {
+                const blob = await put(`${code}_${fileName}`, buffer, {
+                    access: "public",
+                    contentType: mimeType,
+                });
+                storedFilename = blob.url;
+                storageType = "blob";
+                console.log(`File uploaded to Vercel Blob: ${blob.url}`);
+            } catch (error) {
+                console.error("Vercel Blob upload failed:", error);
+            }
+        }
+
+        // Fall back to local storage (only works in dev)
+        if (!storedFilename) {
+            try {
+                storedFilename = await saveLocally(buffer, fileName);
+                storageType = "local";
+                console.log(`File saved locally: ${storedFilename}`);
+            } catch (error) {
+                console.error("Local storage failed:", error);
+                return NextResponse.json({ error: "No storage available" }, { status: 500 });
+            }
         }
 
         // Store metadata
@@ -115,7 +143,7 @@ export async function POST(request: NextRequest) {
         };
 
         fileStore.set(code, metadata);
-        console.log(`File stored with code: ${code}, total files in store: ${fileStore.size}`);
+        console.log(`File stored with code: ${code}, storage: ${storageType}, total in store: ${fileStore.size}`);
 
         return NextResponse.json({
             code,
