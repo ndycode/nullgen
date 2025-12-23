@@ -3,8 +3,8 @@
 
 export interface FileMetadata {
     // Storage info
-    storageType: "local" | "gdrive";
-    filename: string; // Local filename or Google Drive file ID
+    storageType: "local" | "r2";
+    filename: string; // Local filename or R2 Key
 
     // File info
     originalName: string;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { googleDriveStorage } from "@/lib/google-drive";
+import { r2Storage } from "@/lib/r2";
 import { fileStore, FileMetadata } from "@/lib/file-store";
 
 // Generate a 6-digit code
@@ -25,8 +25,8 @@ async function cleanupExpired() {
     for (const [code, file] of fileStore.entries()) {
         if (file.expiresAt < now || (file.maxDownloads !== Infinity && file.downloadCount >= file.maxDownloads)) {
             try {
-                if (file.storageType === "gdrive") {
-                    await googleDriveStorage.deleteFile(file.filename);
+                if (file.storageType === "r2") {
+                    await r2Storage.deleteFile(file.filename);
                 }
             } catch (e) {
                 console.error("Error deleting file:", e);
@@ -40,9 +40,6 @@ export async function POST(request: NextRequest) {
     try {
         // Clean up expired files first
         await cleanupExpired();
-
-        // NO Authentication check needed explicitly here.
-        // The server uses its own credentials (Refresh Token) to upload.
 
         const formData = await request.formData();
         const files = formData.getAll("files") as File[];
@@ -84,33 +81,34 @@ export async function POST(request: NextRequest) {
         // Calculate expiry
         const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-        // Try Google Drive first (primary storage)
-        let storageType: "local" | "gdrive" = "local";
+        // Try R2 first (primary storage)
+        let storageType: "local" | "r2" = "local";
         let storedFilename: string = "";
 
-        if (googleDriveStorage.isConfigured()) {
+        if (r2Storage.isConfigured()) {
             try {
-                console.log("Attempting Google Drive upload (Server Auth)...");
-                const result = await googleDriveStorage.uploadFile(buffer, `${code}_${fileName}`, mimeType);
-                storedFilename = result.fileId;
-                storageType = "gdrive";
-                console.log(`File uploaded to Google Drive: ${result.fileId}`);
+                console.log("Attempting R2 upload...");
+                // Use code + random + filename to avoid collisions
+                const randomSuffix = crypto.randomBytes(4).toString("hex");
+                const key = `${code}-${randomSuffix}-${fileName}`;
+
+                await r2Storage.uploadFile(buffer, key, mimeType);
+                storedFilename = key;
+                storageType = "r2";
+                console.log(`File uploaded to R2: ${key}`);
             } catch (error) {
-                console.error("Google Drive upload failed:", error);
-                // Fallback or Error? 
-                // For production, if GDrive is configured but fails, we should probably error out
-                // to avoid silent failures or data loss on Vercel ephemeral storage.
+                console.error("R2 upload failed:", error);
                 const errorMessage = error instanceof Error ? error.message : "Unknown error";
                 return NextResponse.json({
-                    error: `Google Drive upload failed: ${errorMessage}`
+                    error: `Storage upload failed: ${errorMessage}`
                 }, { status: 500 });
             }
         } else {
-            console.log("Google Drive not configured, trying local storage...");
+            console.log("R2 not configured, trying local storage...");
             // Fall back to local storage (only works in dev)
             if (process.env.NODE_ENV === 'production') {
                 return NextResponse.json({
-                    error: "Storage not configured. Please contact the administrator to set up Google Drive."
+                    error: "Storage not configured. Please contact admin."
                 }, { status: 500 });
             }
 

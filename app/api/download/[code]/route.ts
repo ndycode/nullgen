@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { googleDriveStorage } from "@/lib/google-drive";
+import { r2Storage } from "@/lib/r2";
 import { fileStore } from "@/lib/file-store";
 
 // Hash password for comparison
@@ -33,8 +33,8 @@ export async function GET(
         if (new Date() > fileInfo.expiresAt) {
             // Clean up
             try {
-                if (fileInfo.storageType === "gdrive") {
-                    await googleDriveStorage.deleteFile(fileInfo.filename);
+                if (fileInfo.storageType === "r2") {
+                    await r2Storage.deleteFile(fileInfo.filename);
                 }
             } catch (e) {
                 console.error("Error deleting expired file:", e);
@@ -74,12 +74,12 @@ export async function GET(
         // Get file content
         let fileBuffer: Buffer;
 
-        if (fileInfo.storageType === "gdrive") {
-            // Download from Google Drive
+        if (fileInfo.storageType === "r2") {
+            // Download from R2
             try {
-                fileBuffer = await googleDriveStorage.downloadFile(fileInfo.filename);
+                fileBuffer = await r2Storage.downloadFile(fileInfo.filename);
             } catch (error) {
-                console.error("Google Drive download error:", error);
+                console.error("R2 download error:", error);
                 return NextResponse.json({ error: "Failed to retrieve file" }, { status: 500 });
             }
         } else {
@@ -105,8 +105,8 @@ export async function GET(
             // Schedule deletion
             setTimeout(async () => {
                 try {
-                    if (fileInfo.storageType === "gdrive") {
-                        await googleDriveStorage.deleteFile(fileInfo.filename);
+                    if (fileInfo.storageType === "r2") {
+                        await r2Storage.deleteFile(fileInfo.filename);
                     } else {
                         const uploadsDir = path.join(process.cwd(), "uploads");
                         const filePath = path.join(uploadsDir, fileInfo.filename);
