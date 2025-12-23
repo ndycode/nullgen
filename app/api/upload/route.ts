@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { put, del } from "@vercel/blob";
 import { googleDriveStorage } from "@/lib/google-drive";
 import { fileStore, FileMetadata } from "@/lib/file-store";
 
@@ -25,12 +24,9 @@ async function cleanupExpired() {
     const now = new Date();
     for (const [code, file] of fileStore.entries()) {
         if (file.expiresAt < now || (file.maxDownloads !== Infinity && file.downloadCount >= file.maxDownloads)) {
-            // Delete from storage
             try {
                 if (file.storageType === "gdrive") {
                     await googleDriveStorage.deleteFile(file.filename);
-                } else if (file.storageType === "blob") {
-                    await del(file.filename);
                 }
             } catch (e) {
                 console.error("Error deleting file:", e);
@@ -85,46 +81,40 @@ export async function POST(request: NextRequest) {
         // Calculate expiry
         const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-        // Try storage options in order: Google Drive -> Vercel Blob -> Local
-        let storageType: "local" | "gdrive" | "blob" = "local";
+        // Try Google Drive first (primary storage)
+        let storageType: "local" | "gdrive" = "local";
         let storedFilename: string = "";
 
-        // Try Google Drive first
+        // Ensure Google Drive is initialized
+        await googleDriveStorage.ensureInitialized();
+
         if (googleDriveStorage.isConfigured()) {
             try {
+                console.log("Attempting Google Drive upload...");
                 const result = await googleDriveStorage.uploadFile(buffer, `${code}_${fileName}`, mimeType);
                 storedFilename = result.fileId;
                 storageType = "gdrive";
                 console.log(`File uploaded to Google Drive: ${result.fileId}`);
             } catch (error) {
                 console.error("Google Drive upload failed:", error);
+                // Return specific error for Google Drive issues
+                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                return NextResponse.json({
+                    error: `Google Drive upload failed: ${errorMessage}`
+                }, { status: 500 });
             }
-        }
-
-        // Try Vercel Blob if Google Drive failed
-        if (!storedFilename && process.env.BLOB_READ_WRITE_TOKEN) {
-            try {
-                const blob = await put(`${code}_${fileName}`, buffer, {
-                    access: "public",
-                    contentType: mimeType,
-                });
-                storedFilename = blob.url;
-                storageType = "blob";
-                console.log(`File uploaded to Vercel Blob: ${blob.url}`);
-            } catch (error) {
-                console.error("Vercel Blob upload failed:", error);
-            }
-        }
-
-        // Fall back to local storage (only works in dev)
-        if (!storedFilename) {
+        } else {
+            console.log("Google Drive not configured, trying local storage...");
+            // Fall back to local storage (only works in dev)
             try {
                 storedFilename = await saveLocally(buffer, fileName);
                 storageType = "local";
                 console.log(`File saved locally: ${storedFilename}`);
             } catch (error) {
                 console.error("Local storage failed:", error);
-                return NextResponse.json({ error: "No storage available" }, { status: 500 });
+                return NextResponse.json({
+                    error: "No storage available. Please configure Google Drive."
+                }, { status: 500 });
             }
         }
 
@@ -143,7 +133,7 @@ export async function POST(request: NextRequest) {
         };
 
         fileStore.set(code, metadata);
-        console.log(`File stored with code: ${code}, storage: ${storageType}, total in store: ${fileStore.size}`);
+        console.log(`File stored with code: ${code}, storage: ${storageType}`);
 
         return NextResponse.json({
             code,
@@ -152,7 +142,8 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("Upload error:", error);
-        return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : "Upload failed";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
 

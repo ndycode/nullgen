@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { del } from "@vercel/blob";
 import { googleDriveStorage } from "@/lib/google-drive";
 import { fileStore } from "@/lib/file-store";
 
@@ -36,8 +35,6 @@ export async function GET(
             try {
                 if (fileInfo.storageType === "gdrive") {
                     await googleDriveStorage.deleteFile(fileInfo.filename);
-                } else if (fileInfo.storageType === "blob") {
-                    await del(fileInfo.filename);
                 }
             } catch (e) {
                 console.error("Error deleting expired file:", e);
@@ -80,19 +77,10 @@ export async function GET(
         if (fileInfo.storageType === "gdrive") {
             // Download from Google Drive
             try {
+                await googleDriveStorage.ensureInitialized();
                 fileBuffer = await googleDriveStorage.downloadFile(fileInfo.filename);
             } catch (error) {
                 console.error("Google Drive download error:", error);
-                return NextResponse.json({ error: "Failed to retrieve file" }, { status: 500 });
-            }
-        } else if (fileInfo.storageType === "blob") {
-            // Download from Vercel Blob
-            try {
-                const response = await fetch(fileInfo.filename);
-                if (!response.ok) throw new Error("Blob fetch failed");
-                fileBuffer = Buffer.from(await response.arrayBuffer());
-            } catch (error) {
-                console.error("Vercel Blob download error:", error);
                 return NextResponse.json({ error: "Failed to retrieve file" }, { status: 500 });
             }
         } else {
@@ -120,8 +108,6 @@ export async function GET(
                 try {
                     if (fileInfo.storageType === "gdrive") {
                         await googleDriveStorage.deleteFile(fileInfo.filename);
-                    } else if (fileInfo.storageType === "blob") {
-                        await del(fileInfo.filename);
                     } else {
                         const uploadsDir = path.join(process.cwd(), "uploads");
                         const filePath = path.join(uploadsDir, fileInfo.filename);

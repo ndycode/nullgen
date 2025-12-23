@@ -3,8 +3,8 @@
 
 export interface FileMetadata {
     // Storage info
-    storageType: "local" | "gdrive" | "blob";
-    filename: string; // Local filename, Google Drive file ID, or Vercel Blob URL
+    storageType: "local" | "gdrive";
+    filename: string; // Local filename or Google Drive file ID
 
     // File info
     originalName: string;
