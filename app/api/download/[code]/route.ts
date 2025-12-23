@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, unlink } from "fs/promises";
-import path from "path";
 import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
-import { fileStore } from "@/lib/file-store";
+import { FileMetadata } from "@/lib/file-store";
 
 // Hash password for comparison
 function hashPassword(password: string): string {
@@ -20,31 +18,42 @@ export async function GET(
         const isDownload = searchParams.get("download") === "true";
         const providedPassword = searchParams.get("password");
 
-        console.log(`Looking for code: ${code}, fileStore size: ${fileStore.size}`);
+        console.log(`Looking for metadata for code: ${code}`);
 
-        const fileInfo = fileStore.get(code);
+        // Fetch metadata from R2
+        let fileInfo: FileMetadata | null = null;
+
+        if (r2Storage.isConfigured()) {
+            fileInfo = await r2Storage.getMetadata(code);
+        }
 
         if (!fileInfo) {
-            console.log(`File not found for code: ${code}`);
+            console.log(`Metadata not found on R2 for code: ${code}`);
             return NextResponse.json({ error: "File not found or expired" }, { status: 404 });
         }
+
+        // Convert date string back to Date object if needed
+        fileInfo.expiresAt = new Date(fileInfo.expiresAt);
 
         // Check if expired
         if (new Date() > fileInfo.expiresAt) {
             // Clean up
             try {
-                if (fileInfo.storageType === "r2") {
-                    await r2Storage.deleteFile(fileInfo.filename);
-                }
+                await r2Storage.deleteFile(fileInfo.filename);
+                await r2Storage.deleteFile(`${code}.metadata.json`);
             } catch (e) {
                 console.error("Error deleting expired file:", e);
             }
-            fileStore.delete(code);
             return NextResponse.json({ error: "File has expired" }, { status: 410 });
         }
 
         // Check download limit
         if (fileInfo.maxDownloads !== Infinity && fileInfo.downloadCount >= fileInfo.maxDownloads) {
+            // Should have been deleted but if not, delete now
+            try {
+                await r2Storage.deleteFile(fileInfo.filename);
+                await r2Storage.deleteFile(`${code}.metadata.json`);
+            } catch (e) { console.error(e); }
             return NextResponse.json({ error: "Download limit reached" }, { status: 410 });
         }
 
@@ -74,49 +83,29 @@ export async function GET(
         // Get file content
         let fileBuffer: Buffer;
 
-        if (fileInfo.storageType === "r2") {
-            // Download from R2
-            try {
-                fileBuffer = await r2Storage.downloadFile(fileInfo.filename);
-            } catch (error) {
-                console.error("R2 download error:", error);
-                return NextResponse.json({ error: "Failed to retrieve file" }, { status: 500 });
-            }
-        } else {
-            // Read from local storage
-            const uploadsDir = path.join(process.cwd(), "uploads");
-            const filePath = path.join(uploadsDir, fileInfo.filename);
-
-            try {
-                fileBuffer = await readFile(filePath);
-            } catch {
-                return NextResponse.json({ error: "File not found on server" }, { status: 404 });
-            }
+        try {
+            fileBuffer = await r2Storage.downloadRaw(fileInfo.filename);
+        } catch (error) {
+            console.error("R2 download error:", error);
+            return NextResponse.json({ error: "Failed to retrieve file content" }, { status: 500 });
         }
 
-        // Increment download count
+        // Increment download count and update metadata
         fileInfo.downloadCount++;
-
-        // Check if we should delete the file
         const shouldDelete = fileInfo.maxDownloads !== Infinity &&
             fileInfo.downloadCount >= fileInfo.maxDownloads;
 
         if (shouldDelete) {
-            // Schedule deletion
-            setTimeout(async () => {
-                try {
-                    if (fileInfo.storageType === "r2") {
-                        await r2Storage.deleteFile(fileInfo.filename);
-                    } else {
-                        const uploadsDir = path.join(process.cwd(), "uploads");
-                        const filePath = path.join(uploadsDir, fileInfo.filename);
-                        await unlink(filePath);
-                    }
-                    fileStore.delete(code);
-                } catch (e) {
-                    console.error("Error deleting file:", e);
-                }
-            }, 1000);
+            // Delete immediately
+            try {
+                await r2Storage.deleteFile(fileInfo.filename);
+                await r2Storage.deleteFile(`${code}.metadata.json`);
+            } catch (e) {
+                console.error("Error deleting file:", e);
+            }
+        } else {
+            // Update metadata
+            await r2Storage.saveMetadata(code, fileInfo);
         }
 
         return new NextResponse(new Uint8Array(fileBuffer), {

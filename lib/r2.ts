@@ -37,7 +37,7 @@ class R2StorageService {
     }
 
     async uploadFile(
-        buffer: Buffer,
+        buffer: Buffer | string,
         key: string,
         mimeType: string
     ): Promise<string> {
@@ -45,7 +45,7 @@ class R2StorageService {
             throw new Error("R2 storage not configured");
         }
 
-        console.log(`Uploading to R2: ${key} (${buffer.length} bytes)`);
+        console.log(`Uploading to R2: ${key}`);
 
         await this.client.send(
             new PutObjectCommand({
@@ -59,25 +59,51 @@ class R2StorageService {
         return key;
     }
 
-    async downloadFile(key: string): Promise<Buffer> {
+    async downloadRaw(key: string): Promise<Buffer> {
         if (!this.client || !this.bucketName) {
             throw new Error("R2 storage not configured");
         }
 
-        const response = await this.client.send(
-            new GetObjectCommand({
-                Bucket: this.bucketName,
-                Key: key,
-            })
-        );
+        try {
+            const response = await this.client.send(
+                new GetObjectCommand({
+                    Bucket: this.bucketName,
+                    Key: key,
+                })
+            );
 
-        if (!response.Body) {
-            throw new Error("File empty or not found");
+            if (!response.Body) {
+                throw new Error("File empty");
+            }
+
+            // Convert stream to buffer
+            const byteArray = await response.Body.transformToByteArray();
+            return Buffer.from(byteArray);
+        } catch (error: any) {
+            if (error.name === "NoSuchKey") {
+                throw new Error("File not found");
+            }
+            throw error;
         }
+    }
 
-        // Convert stream to buffer
-        const byteArray = await response.Body.transformToByteArray();
-        return Buffer.from(byteArray);
+    // Helper to read JSON metadata
+    async getMetadata(code: string): Promise<any | null> {
+        try {
+            const buffer = await this.downloadRaw(`${code}.metadata.json`);
+            return JSON.parse(buffer.toString());
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // Helper to save JSON metadata
+    async saveMetadata(code: string, metadata: any): Promise<void> {
+        await this.uploadFile(
+            Buffer.from(JSON.stringify(metadata)),
+            `${code}.metadata.json`,
+            "application/json"
+        );
     }
 
     async deleteFile(key: string): Promise<void> {
