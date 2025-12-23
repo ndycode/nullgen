@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { GoogleDriveOAuth } from "@/lib/google-drive-oauth";
+import { googleDriveStorage } from "@/lib/google-drive";
 import { fileStore, FileMetadata } from "@/lib/file-store";
 
 // Generate a 6-digit code
@@ -21,11 +19,18 @@ function hashPassword(password: string): string {
     return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-// Clean up expired files (note: can't delete from user's drive without their token)
+// Clean up expired files
 async function cleanupExpired() {
     const now = new Date();
     for (const [code, file] of fileStore.entries()) {
         if (file.expiresAt < now || (file.maxDownloads !== Infinity && file.downloadCount >= file.maxDownloads)) {
+            try {
+                if (file.storageType === "gdrive") {
+                    await googleDriveStorage.deleteFile(file.filename);
+                }
+            } catch (e) {
+                console.error("Error deleting file:", e);
+            }
             fileStore.delete(code);
         }
     }
@@ -36,14 +41,8 @@ export async function POST(request: NextRequest) {
         // Clean up expired files first
         await cleanupExpired();
 
-        // Get the user's session with access token
-        const session = await getServerSession(authOptions);
-
-        if (!session?.accessToken) {
-            return NextResponse.json({
-                error: "Not authenticated. Please sign in with Google first."
-            }, { status: 401 });
-        }
+        // NO Authentication check needed explicitly here.
+        // The server uses its own credentials (Refresh Token) to upload.
 
         const formData = await request.formData();
         const files = formData.getAll("files") as File[];
@@ -85,23 +84,46 @@ export async function POST(request: NextRequest) {
         // Calculate expiry
         const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-        // Upload to user's Google Drive using OAuth
-        const driveClient = new GoogleDriveOAuth(session.accessToken);
+        // Try Google Drive first (primary storage)
+        let storageType: "local" | "gdrive" = "local";
+        let storedFilename: string = "";
 
-        let storedFilename: string;
-        let storageType: "local" | "gdrive" = "gdrive";
+        if (googleDriveStorage.isConfigured()) {
+            try {
+                console.log("Attempting Google Drive upload (Server Auth)...");
+                const result = await googleDriveStorage.uploadFile(buffer, `${code}_${fileName}`, mimeType);
+                storedFilename = result.fileId;
+                storageType = "gdrive";
+                console.log(`File uploaded to Google Drive: ${result.fileId}`);
+            } catch (error) {
+                console.error("Google Drive upload failed:", error);
+                // Fallback or Error? 
+                // For production, if GDrive is configured but fails, we should probably error out
+                // to avoid silent failures or data loss on Vercel ephemeral storage.
+                const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                return NextResponse.json({
+                    error: `Google Drive upload failed: ${errorMessage}`
+                }, { status: 500 });
+            }
+        } else {
+            console.log("Google Drive not configured, trying local storage...");
+            // Fall back to local storage (only works in dev)
+            if (process.env.NODE_ENV === 'production') {
+                return NextResponse.json({
+                    error: "Storage not configured. Please contact the administrator to set up Google Drive."
+                }, { status: 500 });
+            }
 
-        try {
-            console.log("Uploading to user's Google Drive via OAuth...");
-            const result = await driveClient.uploadFile(buffer, `NullGen_${code}_${fileName}`, mimeType);
-            storedFilename = result.fileId;
-            console.log(`File uploaded to Google Drive: ${result.fileId}`);
-        } catch (error) {
-            console.error("Google Drive OAuth upload failed:", error);
-            const errorMessage = error instanceof Error ? error.message : "Upload failed";
-            return NextResponse.json({
-                error: `Google Drive upload failed: ${errorMessage}`
-            }, { status: 500 });
+            try {
+                storedFilename = await saveLocally(buffer, fileName);
+                storageType = "local";
+                console.log(`File saved locally: ${storedFilename}`);
+            } catch (error) {
+                console.error("Local storage failed:", error);
+                return NextResponse.json({
+                    error: "No storage available."
+                }, { status: 500 });
+            }
         }
 
         // Store metadata
@@ -119,16 +141,29 @@ export async function POST(request: NextRequest) {
         };
 
         fileStore.set(code, metadata);
-        console.log(`File stored with code: ${code}`);
+        console.log(`File stored with code: ${code}, storage: ${storageType}`);
 
         return NextResponse.json({
             code,
             expiresAt: expiresAt.toISOString(),
-            storageType: "gdrive",
+            storageType,
         });
     } catch (error) {
         console.error("Upload error:", error);
         const errorMessage = error instanceof Error ? error.message : "Upload failed";
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
+}
+
+async function saveLocally(buffer: Buffer, originalName: string): Promise<string> {
+    const ext = path.extname(originalName);
+    const filename = `${crypto.randomBytes(16).toString("hex")}${ext}`;
+
+    const uploadsDir = path.join(process.cwd(), "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+
+    const filePath = path.join(uploadsDir, filename);
+    await writeFile(filePath, buffer);
+
+    return filename;
 }

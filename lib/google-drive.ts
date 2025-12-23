@@ -1,71 +1,47 @@
-import { google, drive_v3 } from "googleapis";
+import { google } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
 import { Readable } from "stream";
 
-// Google Drive Service Account configuration
-// IMPORTANT: Service accounts have ZERO storage quota.
-// Files MUST be uploaded to a folder owned by a real user account.
+// Google Drive - Server-Side OAuth Strategy
+// Authenticates as the ADMIN (you) using a Refresh Token.
+// Allows PUBLIC uploads without users needing to sign in.
 
-class GoogleDriveStorage {
-    private drive: drive_v3.Drive | null = null;
-    private folderId: string = "";
+class GoogleDriveService {
+    private oauth2Client: OAuth2Client;
+    private drive: any;
+    private folderId: string;
     private initialized: boolean = false;
-    private initPromise: Promise<void> | null = null;
 
-    async ensureInitialized(): Promise<void> {
-        if (this.initialized) return;
-        if (this.initPromise) return this.initPromise;
+    constructor() {
+        // Initialize config from environment variables
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+        const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+        this.folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
 
-        this.initPromise = this.initialize();
-        await this.initPromise;
-    }
-
-    private async initialize(): Promise<void> {
-        const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-        let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-        if (privateKey) {
-            // Handle both escaped \n and actual newlines
-            privateKey = privateKey.replace(/\\n/g, "\n");
+        if (!clientId || !clientSecret || !refreshToken) {
+            console.warn("Google Drive: Missing OAuth credentials (CLIENT_ID, CLIENT_SECRET, or REFRESH_TOKEN)");
+            // We'll throw errors later if methods are called without config
         }
-        const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
-        console.log("Google Drive init check:", {
-            hasClientEmail: !!clientEmail,
-            hasPrivateKey: !!privateKey,
-            hasFolderId: !!folderId,
-            folderId
-        });
+        this.oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
 
-        if (!clientEmail || !privateKey || !folderId) {
-            console.warn("Google Drive credentials not configured:", {
-                clientEmail: clientEmail ? "set" : "missing",
-                privateKey: privateKey ? "set" : "missing",
-                folderId: folderId ? "set" : "missing",
+        if (refreshToken) {
+            this.oauth2Client.setCredentials({
+                refresh_token: refreshToken
             });
-            this.initialized = true;
-            return;
         }
 
-        try {
-            const auth = new google.auth.GoogleAuth({
-                credentials: {
-                    client_email: clientEmail,
-                    private_key: privateKey,
-                },
-                scopes: ["https://www.googleapis.com/auth/drive"],
-            });
-
-            this.drive = google.drive({ version: "v3", auth });
-            this.folderId = folderId;
-            this.initialized = true;
-            console.log("Google Drive initialized successfully");
-        } catch (error) {
-            console.error("Google Drive initialization failed:", error);
-            this.initialized = true;
-        }
+        this.drive = google.drive({ version: "v3", auth: this.oauth2Client });
     }
 
     isConfigured(): boolean {
-        return this.drive !== null && this.folderId !== "";
+        const hasCreds = !!process.env.GOOGLE_CLIENT_ID &&
+            !!process.env.GOOGLE_CLIENT_SECRET &&
+            !!process.env.GOOGLE_REFRESH_TOKEN;
+        // Attempt to refresh credentials to verify? No, too expensive. 
+        // Just check if vars exist.
+        return hasCreds;
     }
 
     async uploadFile(
@@ -73,72 +49,76 @@ class GoogleDriveStorage {
         fileName: string,
         mimeType: string
     ): Promise<{ fileId: string; webViewLink: string }> {
-        await this.ensureInitialized();
-
-        if (!this.drive) {
-            throw new Error("Google Drive not configured");
+        if (!this.isConfigured()) {
+            throw new Error("Google Drive not configured on server. Check Vercel env vars.");
         }
 
+        // Check if folder ID is set (optional but recommended for organization)
         if (!this.folderId) {
-            throw new Error("Google Drive folder ID not configured - files must be uploaded to a user-owned folder");
+            console.warn("Google Drive: No folder ID configured. Uploading to root.");
         }
 
-        console.log(`Uploading file: ${fileName} (${buffer.length} bytes) to folder: ${this.folderId}`);
+        console.log(`Uploading file (Public): ${fileName} (${buffer.length} bytes) to folder: ${this.folderId || 'root'}`);
 
         // Convert buffer to readable stream
         const stream = new Readable();
         stream.push(buffer);
         stream.push(null);
 
-        // Upload to the user's folder (REQUIRED - service accounts have zero storage quota)
-        const response = await this.drive.files.create({
-            requestBody: {
-                name: fileName,
-                parents: [this.folderId], // MUST specify parent folder
-            },
-            media: {
-                mimeType,
-                body: stream,
-            },
-            fields: "id, webViewLink",
-            supportsAllDrives: true,
-        });
-
-        if (!response.data.id) {
-            throw new Error("Failed to upload file to Google Drive");
-        }
-
-        console.log(`File uploaded successfully: ${response.data.id}`);
-
-        // Make file accessible via link
         try {
-            await this.drive.permissions.create({
-                fileId: response.data.id,
+            const response = await this.drive.files.create({
                 requestBody: {
-                    role: "reader",
-                    type: "anyone",
+                    name: fileName,
+                    parents: this.folderId ? [this.folderId] : undefined,
                 },
-                supportsAllDrives: true,
+                media: {
+                    mimeType,
+                    body: stream,
+                },
+                fields: "id, webViewLink",
             });
-        } catch (permError) {
-            console.warn("Could not set public permissions:", permError);
-        }
 
-        return {
-            fileId: response.data.id,
-            webViewLink: response.data.webViewLink || "",
-        };
+            if (!response.data.id) {
+                throw new Error("Failed to upload file to Google Drive");
+            }
+
+            console.log(`File uploaded successfully: ${response.data.id}`);
+
+            // Make file accessible via link (Public Read)
+            // This ensures the person with the link can view it if needed
+            try {
+                await this.drive.permissions.create({
+                    fileId: response.data.id,
+                    requestBody: {
+                        role: "reader",
+                        type: "anyone",
+                    },
+                });
+            } catch (permError) {
+                console.warn("Could not set public permissions:", permError);
+            }
+
+            return {
+                fileId: response.data.id,
+                webViewLink: response.data.webViewLink || "",
+            };
+        } catch (error: any) {
+            // Handle common OAuth errors
+            if (error.response?.data?.error === "invalid_grant") {
+                console.error("Critical: Google Refresh Token is invalid or expired. Please generate a new one.");
+                throw new Error("Server authentication failed (Invalid Token). Contact admin.");
+            }
+            throw error;
+        }
     }
 
     async downloadFile(fileId: string): Promise<Buffer> {
-        await this.ensureInitialized();
-
-        if (!this.drive) {
+        if (!this.isConfigured()) {
             throw new Error("Google Drive not configured");
         }
 
         const response = await this.drive.files.get(
-            { fileId, alt: "media", supportsAllDrives: true },
+            { fileId, alt: "media" },
             { responseType: "arraybuffer" }
         );
 
@@ -146,19 +126,15 @@ class GoogleDriveStorage {
     }
 
     async deleteFile(fileId: string): Promise<void> {
-        await this.ensureInitialized();
-
-        if (!this.drive) {
-            throw new Error("Google Drive not configured");
-        }
+        if (!this.isConfigured()) return;
 
         try {
-            await this.drive.files.delete({ fileId, supportsAllDrives: true });
+            await this.drive.files.delete({ fileId });
         } catch (error) {
             console.error("Failed to delete file from Google Drive:", error);
         }
     }
 }
 
-// Singleton instance
-export const googleDriveStorage = new GoogleDriveStorage();
+// Singleton export
+export const googleDriveStorage = new GoogleDriveService();

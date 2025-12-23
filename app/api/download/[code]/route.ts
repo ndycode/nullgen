@@ -77,7 +77,6 @@ export async function GET(
         if (fileInfo.storageType === "gdrive") {
             // Download from Google Drive
             try {
-                await googleDriveStorage.ensureInitialized();
                 fileBuffer = await googleDriveStorage.downloadFile(fileInfo.filename);
             } catch (error) {
                 console.error("Google Drive download error:", error);
