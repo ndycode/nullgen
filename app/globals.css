@@ -300,3 +300,208 @@
 .dark a:not([class]):hover {
   text-shadow: 0 0 8px oklch(0.80 0.25 145 / 60%);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PREMIUM ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+
+/* Pulse glow animation for primary buttons */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px oklch(0.80 0.25 145 / 40%),
+      0 0 20px oklch(0.80 0.25 145 / 20%);
+  }
+
+  50% {
+    box-shadow:
+      0 0 15px oklch(0.80 0.25 145 / 60%),
+      0 0 30px oklch(0.80 0.25 145 / 30%);
+  }
+}
+
+.dark .bg-primary {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.dark .bg-primary:hover {
+  animation: none;
+}
+
+/* Subtle border glow animation */
+@keyframes border-glow {
+
+  0%,
+  100% {
+    border-color: oklch(0.28 0.06 145);
+  }
+
+  50% {
+    border-color: oklch(0.40 0.10 145);
+  }
+}
+
+.dark [data-slot="card"] {
+  animation: border-glow 4s ease-in-out infinite;
+}
+
+.dark [data-slot="card"]:hover {
+  animation: none;
+  border-color: oklch(0.50 0.15 145);
+}
+
+/* Typing cursor blink for headings */
+@keyframes cursor-blink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Glitch effect on hover */
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-1px, 1px);
+  }
+
+  40% {
+    transform: translate(1px, -1px);
+  }
+
+  60% {
+    transform: translate(-1px, -1px);
+  }
+
+  80% {
+    transform: translate(1px, 1px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+.dark h1:hover {
+  animation: glitch 0.3s ease-in-out;
+}
+
+/* Smooth fade-in for page load */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark main {
+  animation: fade-in-up 0.5s ease-out;
+}
+
+/* Enhanced input focus animation */
+@keyframes focus-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px oklch(0.80 0.25 145 / 50%),
+      0 0 8px oklch(0.80 0.25 145 / 25%);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px oklch(0.80 0.25 145 / 70%),
+      0 0 15px oklch(0.80 0.25 145 / 40%);
+  }
+}
+
+.dark input:focus,
+.dark textarea:focus {
+  animation: focus-pulse 2s ease-in-out infinite;
+}
+
+/* Switch toggle animation enhancement */
+.dark [data-state="checked"] {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Progress bar shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.dark [data-slot="progress-indicator"] {
+  background: linear-gradient(90deg,
+      oklch(0.80 0.25 145) 0%,
+      oklch(0.90 0.30 145) 50%,
+      oklch(0.80 0.25 145) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ENHANCED HOVER STATES
+   ══════════════════════════════════════════════════════════════ */
+
+/* Scale up on hover for interactive elements */
+.dark button:active,
+.dark [role="button"]:active {
+  transform: scale(0.98);
+}
+
+/* Tab glow enhancement */
+.dark [data-slot="tabs-trigger"] {
+  transition: all 0.2s ease;
+}
+
+.dark [data-slot="tabs-trigger"]:hover {
+  text-shadow: 0 0 8px oklch(0.80 0.25 145 / 50%);
+}
+
+.dark [data-slot="tabs-trigger"][data-state="active"] {
+  text-shadow: 0 0 10px oklch(0.80 0.25 145 / 70%);
+}
+
+/* OTP Input glow */
+.dark [data-slot="input-otp-slot"] {
+  transition: all 0.2s ease;
+}
+
+.dark [data-slot="input-otp-slot"]:has(input:focus) {
+  box-shadow: 0 0 10px oklch(0.80 0.25 145 / 40%);
+  border-color: oklch(0.60 0.18 145);
+}
+
+/* Dropzone dashed border animation */
+@keyframes dash-move {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* Recent transfer item hover */
+.dark .bg-card:hover {
+  background: oklch(0.12 0.015 145);
+}
