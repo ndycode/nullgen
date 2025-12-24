@@ -108,23 +108,36 @@ npm start
 
 ## Tools Reference
 
+### Sharing
 | Tool | Description | Dependencies |
 |------|-------------|--------------|
 | **drop** | File sharing with 6-digit codes | Cloudflare R2 |
 | **qr** | Instant QR code generation | qrcode.react |
+
+### Generate
+| Tool | Description | Dependencies |
+|------|-------------|--------------|
 | **pass** | Secure password generator | - |
 | **color** | Color format converter (HEX/RGB/HSL) | - |
-| **privacy** | EXIF stripper + anti-hash + fake metadata | piexifjs, jszip |
-| **compress** | Bulk image compression | jszip |
-| **resize** | Bulk resize with presets (FHD, HD, etc) | jszip |
+| **hash** | MD5, SHA-256, SHA-512 hashing | - |
+
+### Text
+| Tool | Description | Dependencies |
+|------|-------------|--------------|
 | **count** | Word, character, reading time | - |
 | **case** | UPPER / lower / Title case | - |
 | **clean** | Strip whitespace and empty lines | - |
 | **emoji** | Search and copy emojis | - |
+| **days** | Days between dates calculator | - |
+
+### Image
+| Tool | Description | Dependencies |
+|------|-------------|--------------|
+| **privacy** | EXIF stripper + anti-hash + fake metadata | piexifjs, jszip |
+| **compress** | Bulk image compression | jszip |
+| **resize** | Bulk resize with presets (FHD, HD, etc) | jszip |
 | **convert** | PNG ↔ JPG ↔ WebP converter | - |
 | **favicon** | Emoji to .ico generator | - |
-| **hash** | MD5, SHA-256, SHA-512 hashing | - |
-| **days** | Days between dates calculator | - |
 | **erase** | AI background removal | @imgly/background-removal |
 
 ## License
