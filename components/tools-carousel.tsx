@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CaretLeft, CaretRight, CaretDown, Check } from "@phosphor-icons/react";
 import { TOOLS } from "@/lib/tools-config";
@@ -10,9 +9,10 @@ import { TOOLS } from "@/lib/tools-config";
 interface ToolsCarouselProps {
     children: React.ReactNode[];
     initialIndex?: number;
+    onBack?: () => void;
 }
 
-export function ToolsCarousel({ children, initialIndex = 0 }: ToolsCarouselProps) {
+export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [direction, setDirection] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
@@ -48,13 +48,14 @@ export function ToolsCarousel({ children, initialIndex = 0 }: ToolsCarouselProps
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-8 lg:px-12 py-6 relative transform-gpu">
+        <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-8 lg:px-12 py-6 relative transform-gpu overflow-visible">
             {/* Back button */}
-            <Link href="/" className="absolute top-4 left-4">
-                <Button variant="ghost" size="icon">
-                    <ArrowLeft className="w-5 h-5" />
-                </Button>
-            </Link>
+            <button
+                onClick={onBack}
+                className="absolute top-4 left-4 p-2 rounded-lg hover:bg-muted transition-colors"
+            >
+                <ArrowLeft className="w-5 h-5" />
+            </button>
 
             {/* Header - morphs from home page */}
             <motion.div
