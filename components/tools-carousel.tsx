@@ -155,24 +155,103 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                     transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                                     className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-card border rounded-xl shadow-lg overflow-hidden w-[280px] max-h-[350px] overflow-y-auto scrollbar-hide z-50 p-2"
                                 >
-                                    {/* All tools in order */}
-                                    <div className="grid grid-cols-2 gap-1">
-                                        {TOOLS.map((tool, index) => {
-                                            const Icon = tool.icon;
-                                            return (
-                                                <button
-                                                    key={tool.id}
-                                                    onClick={() => selectTool(index)}
-                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                        ? "bg-primary text-primary-foreground"
-                                                        : "hover:bg-muted text-muted-foreground"
-                                                        }`}
-                                                >
-                                                    <Icon className="w-3.5 h-3.5" />
-                                                    <span className="truncate">{tool.name}</span>
-                                                </button>
-                                            );
-                                        })}
+                                    {/* Tools by category */}
+                                    <div className="space-y-3">
+                                        {/* Sharing */}
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">sharing</p>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                {TOOLS.filter(t => t.category === 'sharing').map((tool) => {
+                                                    const index = TOOLS.findIndex(t => t.id === tool.id);
+                                                    const Icon = tool.icon;
+                                                    return (
+                                                        <button
+                                                            key={tool.id}
+                                                            onClick={() => selectTool(index)}
+                                                            className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "hover:bg-muted text-muted-foreground"
+                                                                }`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />
+                                                            <span className="truncate">{tool.name}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Generate */}
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">generate</p>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                {TOOLS.filter(t => t.category === 'generate').map((tool) => {
+                                                    const index = TOOLS.findIndex(t => t.id === tool.id);
+                                                    const Icon = tool.icon;
+                                                    return (
+                                                        <button
+                                                            key={tool.id}
+                                                            onClick={() => selectTool(index)}
+                                                            className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "hover:bg-muted text-muted-foreground"
+                                                                }`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />
+                                                            <span className="truncate">{tool.name}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Text */}
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">text</p>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                {TOOLS.filter(t => t.category === 'text').map((tool) => {
+                                                    const index = TOOLS.findIndex(t => t.id === tool.id);
+                                                    const Icon = tool.icon;
+                                                    return (
+                                                        <button
+                                                            key={tool.id}
+                                                            onClick={() => selectTool(index)}
+                                                            className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "hover:bg-muted text-muted-foreground"
+                                                                }`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />
+                                                            <span className="truncate">{tool.name}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Image */}
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">image</p>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                {TOOLS.filter(t => t.category === 'image').map((tool) => {
+                                                    const index = TOOLS.findIndex(t => t.id === tool.id);
+                                                    const Icon = tool.icon;
+                                                    return (
+                                                        <button
+                                                            key={tool.id}
+                                                            onClick={() => selectTool(index)}
+                                                            className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "hover:bg-muted text-muted-foreground"
+                                                                }`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />
+                                                            <span className="truncate">{tool.name}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </motion.div>
                             </>
