@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, UploadSimple, Image as ImageIcon } from "@phosphor-icons/react";
@@ -19,10 +19,19 @@ export function FaviconGen() {
     const previewCanvasRef = useRef<HTMLCanvasElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string>("");
+    const [isReady, setIsReady] = useState(false);
+
+    // Delay initial render to prevent lag when switching tools
+    useEffect(() => {
+        const timer = setTimeout(() => setIsReady(true), 50);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
-        generatePreview(64);
-    }, [text, bgColor, textColor, borderRadius, uploadedImage, mode]);
+        if (isReady) {
+            generatePreview(64);
+        }
+    }, [text, bgColor, textColor, borderRadius, uploadedImage, mode, isReady]);
 
     const handleImageUpload = (file: File) => {
         const reader = new FileReader();
