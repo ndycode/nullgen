@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Toolkit</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">🧰</span>
+                <span class="logo-text">Image Toolkit</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-tool="stripper">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-label">EXIF Stripper</span>
+                </li>
+                <li class="nav-item" data-tool="resizer">
+                    <span class="nav-icon">📐</span>
+                    <span class="nav-label">Bulk Resizer</span>
+                </li>
+                <li class="nav-item" data-tool="cropper">
+                    <span class="nav-icon">1:1</span>
+                    <span class="nav-label">Bulk Cropper</span>
+                </li>
+                <li class="nav-item" data-tool="randomcrop">
+                    <span class="nav-icon">RND</span>
+                    <span class="nav-label">Random Cropper</span>
+                </li>
+                <li class="nav-item" data-tool="converter">
+                    <span class="nav-icon">🔄</span>
+                    <span class="nav-label">Format Converter</span>
+                </li>
+                <li class="nav-item" data-tool="compressor">
+                    <span class="nav-icon">🗜️</span>
+                    <span class="nav-label">Compressor</span>
+                </li>
+                <li class="nav-item" data-tool="viewer">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-label">EXIF Viewer</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <span>100% Client-Side</span>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- EXIF Stripper Tool -->
+            <div class="tool-panel active" id="tool-stripper">
+                <div class="tool-header">
+                    <h1>🛡️ EXIF Stripper</h1>
+                    <p>Remove metadata & add random EXIF for privacy</p>
+                </div>
+                <div class="drop-zone" data-tool="stripper">
+                    <span class="drop-icon">📁</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <div class="settings-row">
+                    <div class="setting">
+                        <label>Quality</label>
+                        <div class="range-wrap">
+                            <input type="range" id="stripper-quality" min="50" max="100" value="90">
+                            <span>90%</span>
+                        </div>
+                    </div>
+                    <div class="setting">
+                        <label>Random EXIF</label>
+                        <button class="toggle-btn" id="stripper-random">OFF</button>
+                    </div>
+                    <div class="setting">
+                        <label>Safety Crop</label>
+                        <button class="toggle-btn" id="stripper-crop">OFF</button>
+                    </div>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">⚡ Process & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+            </div>
+
+            <!-- Bulk Resizer Tool -->
+            <div class="tool-panel" id="tool-resizer">
+                <div class="tool-header">
+                    <h1>📐 Bulk Resizer</h1>
+                    <p>Resize multiple images with presets or custom sizes</p>
+                </div>
+                <div class="drop-zone" data-tool="resizer">
+                    <span class="drop-icon">📁</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <div class="settings-row">
+                    <div class="setting">
+                        <label>Preset</label>
+                        <select id="resizer-preset">
+                            <option value="custom">Custom Size</option>
+                            <option value="1920x1080">Full HD (1920×1080)</option>
+                            <option value="1280x720">HD (1280×720)</option>
+                            <option value="1080x1080">Instagram Square</option>
+                            <option value="1200x630">Facebook Post</option>
+                            <option value="1500x500">Twitter Header</option>
+                            <option value="800x800">Thumbnail Large</option>
+                            <option value="400x400">Thumbnail Small</option>
+                            <option value="256x256">Icon Size</option>
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <label>Width (px)</label>
+                        <input type="number" id="resizer-width" placeholder="Auto" min="1" max="10000">
+                    </div>
+                    <div class="setting">
+                        <label>Height (px)</label>
+                        <input type="number" id="resizer-height" placeholder="Auto" min="1" max="10000">
+                    </div>
+                    <div class="setting">
+                        <label>Lock Ratio</label>
+                        <button class="toggle-btn active" id="resizer-lock">ON</button>
+                    </div>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">⚡ Resize & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+            </div>
+
+            <!-- Bulk Cropper Tool -->
+            <div class="tool-panel" id="tool-cropper">
+                <div class="tool-header">
+                    <h1>Bulk Cropper (1:1)</h1>
+                    <p>Center-crop images into a square ratio</p>
+                </div>
+                <div class="drop-zone" data-tool="cropper">
+                    <span class="drop-icon">1:1</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">Crop to 1:1 & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+            </div>
+
+            <!-- Random Cropper Tool -->
+            <div class="tool-panel" id="tool-randomcrop">
+                <div class="tool-header">
+                    <h1>Random Cropper</h1>
+                    <p>Randomly trims a small edge margin to keep images unique</p>
+                </div>
+                <div class="drop-zone" data-tool="randomcrop">
+                    <span class="drop-icon">RND</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <div class="settings-row">
+                    <div class="setting">
+                        <label>Max Crop (%)</label>
+                        <div class="range-wrap">
+                            <input type="range" id="randomcrop-amount" min="1" max="10" value="4">
+                            <span>4%</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">Random Crop & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+            </div>
+
+            <!-- Format Converter Tool -->
+            <div class="tool-panel" id="tool-converter">
+                <div class="tool-header">
+                    <h1>🔄 Format Converter</h1>
+                    <p>Convert images between JPEG, PNG, WebP, GIF, BMP</p>
+                </div>
+                <div class="drop-zone" data-tool="converter">
+                    <span class="drop-icon">📁</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <div class="settings-row">
+                    <div class="setting">
+                        <label>Output Format</label>
+                        <select id="converter-format">
+                            <option value="jpeg">JPEG (.jpg)</option>
+                            <option value="png">PNG (.png)</option>
+                            <option value="webp">WebP (.webp)</option>
+                            <option value="gif">GIF (.gif)</option>
+                            <option value="bmp">BMP (.bmp)</option>
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <label>Quality</label>
+                        <div class="range-wrap">
+                            <input type="range" id="converter-quality" min="50" max="100" value="90">
+                            <span>90%</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">⚡ Convert & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+            </div>
+
+            <!-- Compressor Tool -->
+            <div class="tool-panel" id="tool-compressor">
+                <div class="tool-header">
+                    <h1>🗜️ Image Compressor</h1>
+                    <p>Reduce file size while maintaining quality</p>
+                </div>
+                <div class="drop-zone" data-tool="compressor">
+                    <span class="drop-icon">📁</span>
+                    <span class="drop-text">Drop images anywhere or click to browse</span>
+                    <span class="file-count"></span>
+                    <input type="file" multiple accept="image/*" hidden>
+                </div>
+                <div class="settings-row">
+                    <div class="setting">
+                        <label>Compression Level</label>
+                        <div class="range-wrap">
+                            <input type="range" id="compressor-level" min="10" max="95" value="75">
+                            <span>75%</span>
+                        </div>
+                    </div>
+                    <div class="setting">
+                        <label>Max Width (px)</label>
+                        <input type="number" id="compressor-maxwidth" placeholder="No limit" min="100" max="10000">
+                    </div>
+                </div>
+                <button class="process-btn" disabled>
+                    <span class="btn-text">⚡ Compress & Download ZIP</span>
+                    <span class="btn-progress"></span>
+                </button>
+                <div class="status"></div>
+                <div class="stats-panel" id="compressor-stats" style="display:none;">
+                    <div class="stat">
+                        <span class="stat-label">Original Size</span>
+                        <span class="stat-value" id="stat-original">0 KB</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Compressed Size</span>
+                        <span class="stat-value" id="stat-compressed">0 KB</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Saved</span>
+                        <span class="stat-value stat-success" id="stat-saved">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXIF Viewer Tool -->
+            <div class="tool-panel" id="tool-viewer">
+                <div class="tool-header">
+                    <h1>🔍 EXIF Viewer</h1>
+                    <p>View all metadata from your images</p>
+                </div>
+                <div class="drop-zone" data-tool="viewer">
+                    <span class="drop-icon">📁</span>
+                    <span class="drop-text">Drop a single image to analyze</span>
+                    <span class="file-count"></span>
+                    <input type="file" accept="image/*" hidden>
+                </div>
+                <div class="exif-results" id="exif-results" style="display:none;">
+                    <div class="exif-preview">
+                        <img id="exif-image" src="" alt="Preview">
+                    </div>
+                    <div class="exif-data">
+                        <div class="exif-section">
+                            <h3>📷 Camera Info</h3>
+                            <div class="exif-table" id="exif-camera"></div>
+                        </div>
+                        <div class="exif-section">
+                            <h3>📅 Date & Time</h3>
+                            <div class="exif-table" id="exif-datetime"></div>
+                        </div>
+                        <div class="exif-section">
+                            <h3>📍 Location</h3>
+                            <div class="exif-table" id="exif-location"></div>
+                        </div>
+                        <div class="exif-section">
+                            <h3>⚙️ Settings</h3>
+                            <div class="exif-table" id="exif-settings"></div>
+                        </div>
+                        <div class="exif-section">
+                            <h3>📋 All Metadata</h3>
+                            <div class="exif-table exif-all" id="exif-all"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
