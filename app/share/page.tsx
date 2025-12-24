@@ -11,7 +11,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FlickeringGrid } from "@/components/ui/flickering-grid";
+
+
 import {
     ArrowLeft,
     CloudArrowUp,
@@ -60,9 +61,9 @@ interface UploadOptions {
     usePassword: boolean;
 }
 
-// Spring configurations
-const springBouncy = { type: "spring" as const, stiffness: 400, damping: 17 };
-const springGentle = { type: "spring" as const, stiffness: 300, damping: 25 };
+// Smooth transitions
+const transitionSmooth = { type: "tween" as const, ease: "easeInOut", duration: 0.3 } as const;
+const transitionSubtle = { type: "tween" as const, ease: "easeOut", duration: 0.2 } as const;
 
 // Expiry options
 const expiryOptions = [
@@ -116,13 +117,13 @@ export default function SharePage() {
 
     // Load recent transfers from localStorage
     useEffect(() => {
-        const stored = localStorage.getItem("nullgen_recent");
+        const stored = localStorage.getItem("vxid_recent");
         if (stored) {
             const transfers: RecentTransfer[] = JSON.parse(stored);
             // Filter out expired transfers
             const valid = transfers.filter((t) => t.expiresAt > Date.now());
             setRecentTransfers(valid);
-            localStorage.setItem("nullgen_recent", JSON.stringify(valid));
+            localStorage.setItem("vxid_recent", JSON.stringify(valid));
         }
     }, []);
 
@@ -171,7 +172,7 @@ export default function SharePage() {
         };
         const updated = [transfer, ...recentTransfers.slice(0, 4)];
         setRecentTransfers(updated);
-        localStorage.setItem("nullgen_recent", JSON.stringify(updated));
+        localStorage.setItem("vxid_recent", JSON.stringify(updated));
     };
 
     // ===== Upload Functions =====
@@ -385,7 +386,7 @@ export default function SharePage() {
 
     const clearRecentTransfers = () => {
         setRecentTransfers([]);
-        localStorage.removeItem("nullgen_recent");
+        localStorage.removeItem("vxid_recent");
     };
 
     const getShareLink = () => `${typeof window !== "undefined" ? window.location.origin : ""}/share?code=${code}`;
@@ -403,397 +404,500 @@ export default function SharePage() {
 
     return (
         <main className="min-h-screen bg-background overflow-hidden relative flex flex-col items-center justify-center p-4">
-            {/* Flickering Grid Background */}
-            <FlickeringGrid
-                className="absolute inset-0 z-0"
-                squareSize={4}
-                gridGap={6}
-                color="rgb(16, 185, 129)"
-                maxOpacity={0.08}
-                flickerChance={0.05}
-            />
-
             <div className="relative z-10 w-full max-w-md">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <Link href="/">
-                        <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground">
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="grid grid-cols-[40px_1fr_40px] items-center mb-4"
+                >
+                    <Link href="/" className="justify-self-start">
+                        <Button variant="ghost" size="icon" className="w-auto h-auto p-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors gap-2">
                             <ArrowLeft weight="bold" className="w-4 h-4" />
-                            Back
+                            <span className="text-sm font-medium">Back</span>
                         </Button>
                     </Link>
-                    <h1 className="text-xl font-bold tracking-tight">NullGen Share</h1>
-                    <div className="w-16" /> {/* Spacer for centering */}
-                </div>
+                    <h1 className="text-xl font-bold tracking-tight text-center justify-self-center">vxid.cc</h1>
+                    <div /> {/* Empty col for balance */}
+                </motion.div>
 
-                {/* Main Card */}
-                <Card className="border bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+                {/* Main Card - Animated Resize */}
+                <motion.div
+                    layout
+                    transition={{ layout: { type: "spring", stiffness: 300, damping: 30 } }}
+                    className="border shadow-lg overflow-hidden rounded-xl bg-card w-full"
+                >
+
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <div className="px-6 pt-6">
-                            <TabsList className="w-full grid grid-cols-2">
-                                <TabsTrigger value="send" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                                    <CloudArrowUp className="w-4 h-4 mr-2" />
-                                    Send
-                                </TabsTrigger>
-                                <TabsTrigger value="receive" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                                    <CloudArrowDown className="w-4 h-4 mr-2" />
-                                    Receive
-                                </TabsTrigger>
+                        <div className="px-4 pt-4 pb-0">
+                            <TabsList className="w-full grid grid-cols-2 relative h-9 bg-muted/50 p-1 rounded-lg">
+                                <TabsTrigger value="send" className="z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors duration-200 text-xs font-medium">Send</TabsTrigger>
+                                <TabsTrigger value="receive" className="z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors duration-200 text-xs font-medium">Receive</TabsTrigger>
+                                <motion.div
+                                    className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm z-0"
+                                    initial={false}
+                                    animate={{
+                                        x: activeTab === "send" ? 0 : "100%",
+                                        left: "4px",
+                                        width: "calc(50% - 8px)"
+                                    }}
+                                    transition={transitionSmooth}
+                                />
                             </TabsList>
                         </div>
 
-                        <CardContent className="p-6">
-                            <TabsContent value="send" className="mt-0 space-y-4">
-                                <AnimatePresence mode="wait">
-                                    {uploadState === "success" ? (
-                                        <motion.div
-                                            key="success"
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            className="text-center space-y-4"
-                                        >
-                                            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                                                <CheckCircle weight="fill" className="w-8 h-8 text-primary" />
-                                            </div>
-
-                                            <div className="bg-muted/50 rounded-lg p-4 border border-dashed border-primary/20">
-                                                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">Your Code</p>
-                                                <div className="text-3xl font-mono font-bold tracking-[0.2em] text-primary">
-                                                    {code}
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Button onClick={copyCode} variant="outline" className="gap-2">
-                                                    {copied ? <Check weight="bold" /> : <Copy weight="bold" />}
-                                                    {copied ? "Copied" : "Copy Code"}
-                                                </Button>
-                                                <Button onClick={copyLink} variant="outline" className="gap-2">
-                                                    {copiedLink ? <Check weight="bold" /> : <LinkIcon weight="bold" />}
-                                                    {copiedLink ? "Copied" : "Copy Link"}
-                                                </Button>
-                                            </div>
-
-                                            <Button onClick={resetUpload} variant="ghost" className="w-full text-muted-foreground text-xs">
-                                                Send another file
-                                            </Button>
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="upload-form"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="space-y-4"
-                                        >
-                                            <div
-                                                onDragEnter={handleDrag}
-                                                onDragLeave={handleDrag}
-                                                onDragOver={handleDrag}
-                                                onDrop={handleDrop}
-                                                className={`
-                                                    relative border-2 border-dashed rounded-xl h-32 flex flex-col items-center justify-center text-center transition-all duration-200
-                                                    ${dragActive ? "border-primary bg-primary/5 scale-[1.02]" : "border-muted-foreground/20 hover:border-primary/50 hover:bg-muted/50"}
-                                                    ${files.length > 0 ? "border-primary/50 bg-primary/5" : ""}
-                                                `}
-                                            >
-                                                <input
-                                                    type="file"
-                                                    onChange={handleFileInput}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                    disabled={uploadState === "uploading"}
-                                                    multiple
-                                                />
-                                                {files.length > 0 ? (
-                                                    <div className="space-y-2">
-                                                        {previewUrl ? (
-                                                            <img src={previewUrl} alt="Preview" className="h-12 w-12 object-cover rounded mx-auto" />
-                                                        ) : (
-                                                            <FileArchive className="w-8 h-8 text-primary mx-auto" />
-                                                        )}
-                                                        <div className="px-4">
-                                                            <p className="font-medium text-sm truncate max-w-[200px] mx-auto">
-                                                                {files.length === 1 ? files[0].name : `${files.length} files`}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {formatFileSize(files.reduce((a, f) => a + f.size, 0))}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="space-y-1">
-                                                        <CloudArrowUp className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
-                                                        <p className="font-medium text-sm">Drop files here</p>
-                                                        <p className="text-xs text-muted-foreground">Max 1 GB</p>
-                                                    </div>
-                                                )}
-
-                                                {files.length > 0 && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setFiles([]); }}
-                                                        className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        <div className="relative overflow-hidden">
+                            <AnimatePresence mode="popLayout" initial={false}>
+                                {activeTab === "send" ? (
+                                    <motion.div
+                                        key="send"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={transitionSmooth}
+                                        className="p-4"
+                                    >
+                                        <TabsContent value="send" className="mt-0 space-y-4 focus-visible:outline-none">
+                                            <AnimatePresence mode="wait">
+                                                {uploadState === "success" ? (
+                                                    <motion.div
+                                                        key="success"
+                                                        initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                        transition={transitionSmooth}
+                                                        className="text-center space-y-6 py-6"
                                                     >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
+                                                        <motion.div
+                                                            initial={{ scale: 0.5, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                            transition={{ ...transitionSmooth, delay: 0.1 }}
+                                                            className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center"
+                                                        >
+                                                            <CheckCircle weight="fill" className="w-8 h-8 text-primary" />
+                                                        </motion.div>
 
-                                            <Collapsible open={optionsOpen} onOpenChange={setOptionsOpen}>
-                                                <CollapsibleTrigger asChild>
-                                                    <Button variant="ghost" size="sm" className="w-full flex justify-between text-xs text-muted-foreground font-normal h-8">
-                                                        <span>Options (Expiry, Limit, Password)</span>
-                                                        <GearSix className={`w-3.5 h-3.5 transition-transform ${optionsOpen ? "rotate-90" : ""}`} />
-                                                    </Button>
-                                                </CollapsibleTrigger>
-                                                <CollapsibleContent className="space-y-4 pt-2">
-                                                    <LayoutGroup>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div className="space-y-1.5">
-                                                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Expires In</label>
-                                                                <div className="flex rounded-md shadow-sm bg-background border border-input p-0.5">
-                                                                    {expiryOptions.map((opt) => {
-                                                                        const isActive = uploadOptions.expiryMinutes === opt.value;
-                                                                        return (
-                                                                            <button
-                                                                                key={opt.value}
-                                                                                onClick={() => setUploadOptions(prev => ({ ...prev, expiryMinutes: opt.value }))}
-                                                                                className={`relative flex-1 text-xs py-1 px-2 rounded-sm transition-colors z-10 ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                                                                            >
-                                                                                {isActive && (
-                                                                                    <motion.div
-                                                                                        layoutId="expiry-pill"
-                                                                                        className="absolute inset-0 bg-primary rounded-sm -z-10"
-                                                                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                                                    />
-                                                                                )}
-                                                                                {opt.label}
-                                                                            </button>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            </div>
-                                                            <div className="space-y-1.5">
-                                                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Limit</label>
-                                                                <div className="flex rounded-md shadow-sm bg-background border border-input p-0.5">
-                                                                    {downloadOptions.map((opt) => {
-                                                                        const isActive = uploadOptions.maxDownloads === opt.value;
-                                                                        return (
-                                                                            <button
-                                                                                key={opt.value}
-                                                                                onClick={() => setUploadOptions(prev => ({ ...prev, maxDownloads: opt.value }))}
-                                                                                className={`relative flex-1 text-xs py-1 px-2 rounded-sm transition-colors z-10 ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                                                                            >
-                                                                                {isActive && (
-                                                                                    <motion.div
-                                                                                        layoutId="limit-pill"
-                                                                                        className="absolute inset-0 bg-primary rounded-sm -z-10"
-                                                                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                                                    />
-                                                                                )}
-                                                                                {opt.label}
-                                                                            </button>
-                                                                        );
-                                                                    })}
-                                                                </div>
+                                                        <div className="bg-muted/50 p-4 rounded-xl relative overflow-hidden">
+                                                            <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">Transfer Code</p>
+                                                            <div className="text-3xl font-bold tracking-tight">
+                                                                {code}
                                                             </div>
                                                         </div>
-                                                    </LayoutGroup>
 
-                                                    <div className="space-y-1.5">
-                                                        <div className="flex items-center justify-between">
-                                                            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Password Protection</label>
-                                                            <Switch
-                                                                checked={uploadOptions.usePassword}
-                                                                onCheckedChange={(c) => setUploadOptions(prev => ({ ...prev, usePassword: c }))}
-                                                                className="scale-75 origin-right"
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <Button onClick={copyCode} variant="outline" className="gap-2 h-9 text-sm">
+                                                                {copied ? <Check weight="bold" /> : <Copy weight="bold" />}
+                                                                {copied ? "Copied" : "Copy Code"}
+                                                            </Button>
+                                                            <Button onClick={copyLink} variant="outline" className="gap-2 h-9 text-sm">
+                                                                {copiedLink ? <Check weight="bold" /> : <LinkIcon weight="bold" />}
+                                                                {copiedLink ? "Copied" : "Copy Link"}
+                                                            </Button>
+                                                        </div>
+
+                                                        <Button onClick={resetUpload} variant="ghost" className="w-full text-muted-foreground hover:text-foreground text-sm h-8">
+                                                            Send Another
+                                                        </Button>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="upload-form"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        className="space-y-4"
+                                                    >
+                                                        <motion.div
+                                                            onDrop={handleDrop}
+                                                            animate={{
+                                                                scale: dragActive ? 1.005 : 1,
+                                                                borderColor: dragActive ? "hsl(var(--primary))" : "hsl(var(--border))",
+                                                                backgroundColor: dragActive ? "hsl(var(--primary) / 0.05)" : "transparent"
+                                                            }}
+                                                            whileHover={{ scale: 1.002, borderColor: "hsl(var(--primary) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.5)" }}
+                                                            whileTap={{ scale: 0.998 }}
+                                                            transition={transitionSubtle}
+                                                            className={`
+                                                    relative border-2 border-dashed rounded-xl h-36 flex flex-col items-center justify-center text-center cursor-pointer transition-colors
+                                                    ${files.length > 0 ? "border-primary/50 bg-primary/5" : "border-muted-foreground/20"}
+                                                `}
+                                                        >
+                                                            <input
+                                                                type="file"
+                                                                onChange={handleFileInput}
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                                                disabled={uploadState === "uploading"}
+                                                                multiple
                                                             />
-                                                        </div>
-                                                        {uploadOptions.usePassword && (
-                                                            <div className="relative">
-                                                                <Input
-                                                                    type={showPassword ? "text" : "password"}
-                                                                    placeholder="Enter password"
-                                                                    value={uploadOptions.password}
-                                                                    onChange={(e) => setUploadOptions(prev => ({ ...prev, password: e.target.value }))}
-                                                                    className="h-8 text-xs pr-8"
-                                                                />
+                                                            {files.length > 0 ? (
+                                                                <div className="space-y-2">
+                                                                    {previewUrl ? (
+                                                                        <img src={previewUrl} alt="Preview" className="h-16 w-16 object-cover rounded-md mx-auto shadow-sm" />
+                                                                    ) : (
+                                                                        <FileArchive className="w-10 h-10 text-primary mx-auto" />
+                                                                    )}
+                                                                    <div className="px-4">
+                                                                        <p className="font-medium text-sm truncate max-w-[200px] mx-auto">
+                                                                            {files.length === 1 ? files[0].name : `${files.length} files detected`}
+                                                                        </p>
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {formatFileSize(files.reduce((a, f) => a + f.size, 0))}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-2">
+                                                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-2">
+                                                                        <CloudArrowUp className="w-6 h-6 text-muted-foreground" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-sm">Drop files here</p>
+                                                                        <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {files.length > 0 && (
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => setShowPassword(!showPassword)}
-                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFiles([]); }}
+                                                                    className="absolute top-2 right-2 z-50 p-1.5 rounded-full bg-background hover:bg-primary hover:text-primary-foreground text-muted-foreground border border-border hover:border-primary shadow-sm transition-colors cursor-pointer"
                                                                 >
-                                                                    {showPassword ? (
-                                                                        <EyeSlash weight="bold" className="w-3 h-3" />
-                                                                    ) : (
-                                                                        <Eye weight="bold" className="w-3 h-3" />
-                                                                    )}
+                                                                    <X className="w-3 h-3" />
                                                                 </button>
+                                                            )}
+                                                        </motion.div>
+
+                                                        <div className="pt-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => setOptionsOpen(!optionsOpen)}
+                                                                className="w-full flex justify-between text-muted-foreground hover:text-foreground h-9 font-medium"
+                                                            >
+                                                                <span>Options</span>
+                                                                <GearSix className={`w-4 h-4 transition-transform ${optionsOpen ? "rotate-90" : ""}`} />
+                                                            </Button>
+
+                                                            <AnimatePresence initial={false}>
+                                                                {optionsOpen && (
+                                                                    <motion.div
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{ height: "auto", opacity: 1 }}
+                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                                                                        style={{ overflow: "hidden" }}
+                                                                    >
+                                                                        <div className="pt-2 space-y-4">
+                                                                            <LayoutGroup>
+                                                                                <div className="grid grid-cols-2 gap-4">
+                                                                                    <div className="space-y-2">
+                                                                                        <label className="text-xs font-medium text-muted-foreground">Expires In</label>
+                                                                                        <div className="flex bg-muted p-1 rounded-lg">
+                                                                                            {expiryOptions.map((opt) => {
+                                                                                                const isActive = uploadOptions.expiryMinutes === opt.value;
+                                                                                                return (
+                                                                                                    <button
+                                                                                                        key={opt.value}
+                                                                                                        onClick={() => setUploadOptions(prev => ({ ...prev, expiryMinutes: opt.value }))}
+                                                                                                        className={`relative flex-1 text-xs py-1.5 px-2 rounded-md transition-colors font-medium ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                                                                                    >
+                                                                                                        {isActive && (
+                                                                                                            <motion.div
+                                                                                                                layoutId="expiry-pill"
+                                                                                                                className="absolute inset-0 bg-primary rounded-md z-0 pointer-events-none"
+                                                                                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                                                                            />
+                                                                                                        )}
+                                                                                                        <span className="relative z-10">{opt.label}</span>
+                                                                                                    </button>
+                                                                                                );
+                                                                                            })}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="space-y-2">
+                                                                                        <label className="text-xs font-medium text-muted-foreground">Max Downloads</label>
+                                                                                        <div className="flex bg-muted p-1 rounded-lg">
+                                                                                            {downloadOptions.map((opt) => {
+                                                                                                const isActive = uploadOptions.maxDownloads === opt.value;
+                                                                                                return (
+                                                                                                    <button
+                                                                                                        key={opt.value}
+                                                                                                        onClick={() => setUploadOptions(prev => ({ ...prev, maxDownloads: opt.value }))}
+                                                                                                        className={`relative flex-1 text-xs py-1.5 px-2 rounded-md transition-colors font-medium ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                                                                                    >
+                                                                                                        {isActive && (
+                                                                                                            <motion.div
+                                                                                                                layoutId="download-pill"
+                                                                                                                className="absolute inset-0 bg-primary rounded-md z-0 pointer-events-none"
+                                                                                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                                                                            />
+                                                                                                        )}
+                                                                                                        <span className="relative z-10">{opt.label}</span>
+                                                                                                    </button>
+                                                                                                );
+                                                                                            })}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </LayoutGroup>
+
+                                                                            <div className="space-y-2">
+                                                                                <div className="flex items-center justify-between">
+                                                                                    <label className="text-xs font-medium text-muted-foreground">Password Protection</label>
+                                                                                    <Switch
+                                                                                        checked={uploadOptions.usePassword}
+                                                                                        onCheckedChange={(c) => setUploadOptions(prev => ({ ...prev, usePassword: c }))}
+                                                                                        className="scale-90"
+                                                                                    />
+                                                                                </div>
+                                                                                <AnimatePresence initial={false}>
+                                                                                    {uploadOptions.usePassword && (
+                                                                                        <motion.div
+                                                                                            initial={{ height: 0, opacity: 0 }}
+                                                                                            animate={{ height: "auto", opacity: 1 }}
+                                                                                            exit={{ height: 0, opacity: 0 }}
+                                                                                            transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                                                                                            style={{ overflow: "hidden" }}
+                                                                                        >
+                                                                                            <div className="mt-2">
+                                                                                                <div className="relative">
+                                                                                                    <Input
+                                                                                                        type={showPassword ? "text" : "password"}
+                                                                                                        placeholder="Enter password"
+                                                                                                        value={uploadOptions.password}
+                                                                                                        onChange={(e) => setUploadOptions(prev => ({ ...prev, password: e.target.value }))}
+                                                                                                        className="h-9 text-sm pr-9"
+                                                                                                    />
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        onClick={() => setShowPassword(!showPassword)}
+                                                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                                                                    >
+                                                                                                        {showPassword ? (
+                                                                                                            <EyeSlash weight="bold" className="w-4 h-4" />
+                                                                                                        ) : (
+                                                                                                            <Eye weight="bold" className="w-4 h-4" />
+                                                                                                        )}
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </motion.div>
+                                                                                    )}
+                                                                                </AnimatePresence>
+                                                                            </div>
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+
+                                                        {uploadError && (
+                                                            <div className="text-xs text-destructive bg-destructive/10 p-2 rounded flex items-center gap-2">
+                                                                <Warning weight="fill" /> {uploadError}
                                                             </div>
                                                         )}
-                                                    </div>
-                                                </CollapsibleContent>
-                                            </Collapsible>
 
-                                            {uploadError && (
-                                                <div className="text-xs text-destructive bg-destructive/10 p-2 rounded flex items-center gap-2">
-                                                    <Warning weight="fill" /> {uploadError}
-                                                </div>
-                                            )}
-
-                                            {uploadState === "uploading" && (
-                                                <div className="space-y-1">
-                                                    <Progress value={progress} className="h-1" />
-                                                    <p className="text-[10px] text-muted-foreground text-center">Uploading... {progress}%</p>
-                                                </div>
-                                            )}
-
-                                            <Button
-                                                onClick={uploadFile}
-                                                disabled={files.length === 0 || uploadState === "uploading"}
-                                                className="w-full gap-2"
-                                            >
-                                                {uploadState === "uploading" ? "Uploading..." : "Generate Link"}
-                                            </Button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </TabsContent>
-
-                            <TabsContent value="receive" className="mt-0 space-y-6">
-                                <AnimatePresence mode="wait">
-                                    {(downloadState === "ready" || downloadState === "downloading" || downloadState === "success") && fileInfo ? (
-                                        <motion.div
-                                            key="ready"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="space-y-4"
-                                        >
-                                            <div className="bg-muted/30 p-4 rounded-xl space-y-3">
-                                                <div className="flex items-start gap-4">
-                                                    <div className="bg-background p-2 rounded-lg shadow-sm">
-                                                        <File weight="duotone" className="w-8 h-8 text-primary" />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <h3 className="font-medium text-sm truncate">{fileInfo.name}</h3>
-                                                        <div className="flex gap-3 mt-1">
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                                <HardDrive weight="bold" /> {formatFileSize(fileInfo.size)}
+                                                        {uploadState === "uploading" && (
+                                                            <div className="space-y-2">
+                                                                <Progress value={progress} className="h-2" />
+                                                                <p className="text-xs text-muted-foreground text-center">Uploading... {progress}%</p>
                                                             </div>
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                                <Timer weight="bold" /> {formatTimeRemaining(fileInfo.expiresAt)}
+                                                        )}
+
+                                                        <Button
+                                                            onClick={uploadFile}
+                                                            disabled={files.length === 0 || uploadState === "uploading"}
+                                                            className="w-full gap-2 font-medium"
+                                                            size="lg"
+                                                            color="primary"
+                                                        >
+                                                            {uploadState === "uploading" ? "Creating Link..." : "Create Link"}
+                                                        </Button>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </TabsContent>
+                                    </motion.div >
+                                ) : (
+                                    <motion.div
+                                        key="receive"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={transitionSmooth}
+                                        className="p-4"
+                                    >
+                                        <TabsContent value="receive" className="mt-0 space-y-6 focus-visible:outline-none">
+                                            <AnimatePresence mode="wait">
+                                                {(downloadState === "ready" || downloadState === "downloading" || downloadState === "success") && fileInfo ? (
+                                                    <motion.div
+                                                        key="ready"
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="space-y-4"
+                                                    >
+                                                        <div className="bg-muted/30 p-4 rounded-xl border space-y-3">
+                                                            <div className="flex items-start gap-4">
+                                                                <div className="bg-background border p-2 rounded-lg shadow-sm">
+                                                                    <File weight="duotone" className="w-8 h-8 text-primary" />
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <h3 className="font-semibold text-sm truncate">{fileInfo.name}</h3>
+                                                                    <div className="flex gap-3 mt-1 text-muted-foreground">
+                                                                        <div className="flex items-center gap-1 text-xs">
+                                                                            <HardDrive weight="bold" /> {formatFileSize(fileInfo.size)}
+                                                                        </div>
+                                                                        <div className="flex items-center gap-1 text-xs">
+                                                                            <Timer weight="bold" /> {formatTimeRemaining(fileInfo.expiresAt)}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            {/* Password Input for Download */}
-                                            {(fileInfo as any).requiresPassword && (
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Password Required</label>
-                                                    <Input
-                                                        type="password"
-                                                        placeholder="Enter file password"
-                                                        value={downloadPassword}
-                                                        onChange={(e) => setDownloadPassword(e.target.value)}
-                                                        className="h-9 text-sm"
-                                                    />
-                                                </div>
-                                            )}
+                                                        {/* Password Input for Download */}
+                                                        {(fileInfo as any).requiresPassword && (
+                                                            <div className="space-y-2">
+                                                                <label className="text-xs font-medium text-muted-foreground">Password Required</label>
+                                                                <Input
+                                                                    type="password"
+                                                                    placeholder="Enter file password"
+                                                                    value={downloadPassword}
+                                                                    onChange={(e) => setDownloadPassword(e.target.value)}
+                                                                    className="h-10"
+                                                                />
+                                                            </div>
+                                                        )}
 
-                                            <Button onClick={downloadFile} disabled={downloadState === "downloading"} className="w-full gap-2">
-                                                <CloudArrowDown weight="bold" className="w-4 h-4" />
-                                                {downloadState === "downloading" ? "Downloading..." : "Download File"}
-                                            </Button>
+                                                        <Button onClick={downloadFile} disabled={downloadState === "downloading"} className="w-full gap-2" size="lg">
+                                                            <CloudArrowDown weight="bold" className="w-4 h-4" />
+                                                            {downloadState === "downloading" ? "Downloading..." : "Download File"}
+                                                        </Button>
 
-                                            <Button onClick={resetDownload} variant="ghost" size="sm" className="w-full text-xs text-muted-foreground">
-                                                Looking for another file?
-                                            </Button>
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="input-code"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="space-y-6 py-4"
-                                        >
-                                            <div className="text-center space-y-2">
-                                                <p className="text-sm text-muted-foreground">Enter the 6-digit code to download.</p>
-                                            </div>
+                                                        <Button onClick={resetDownload} variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground">
+                                                            Find Another File
+                                                        </Button>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="input-code"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        className="space-y-6 py-4"
+                                                    >
+                                                        <div className="text-center space-y-2">
+                                                            <p className="text-sm text-muted-foreground">Enter the 6-digit code to receive files</p>
+                                                        </div>
 
-                                            <div className="flex justify-center">
-                                                <InputOTP value={downloadCode} onChange={(val) => {
-                                                    setDownloadCode(val);
-                                                    if (val.length === 6) checkCode(val);
-                                                }} maxLength={6}>
-                                                    <InputOTPGroup className="gap-2">
-                                                        {[0, 1, 2, 3, 4, 5].map((i) => (
-                                                            <InputOTPSlot key={i} index={i} className="w-10 h-12 text-xl border rounded-md" />
-                                                        ))}
-                                                    </InputOTPGroup>
-                                                </InputOTP>
-                                            </div>
+                                                        <div className="flex justify-center">
+                                                            <InputOTP value={downloadCode} onChange={(val) => {
+                                                                setDownloadCode(val);
+                                                                if (val.length === 6) checkCode(val);
+                                                            }} maxLength={6}>
+                                                                <InputOTPGroup className="gap-2">
+                                                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                                                        <InputOTPSlot key={i} index={i} className="w-10 h-12 text-xl shadow-sm" />
+                                                                    ))}
+                                                                </InputOTPGroup>
+                                                            </InputOTP>
+                                                        </div>
 
-                                            {downloadError && (
-                                                <div className="text-center text-xs text-destructive">
-                                                    {downloadError}
-                                                </div>
-                                            )}
+                                                        {downloadError && (
+                                                            <div className="text-center text-xs text-destructive bg-destructive/10 p-2 rounded-md">
+                                                                {downloadError}
+                                                            </div>
+                                                        )}
 
-                                            <Button
-                                                onClick={() => checkCode()}
-                                                disabled={downloadCode.length !== 6 || downloadState === "loading"}
-                                                className="w-full"
-                                                variant="secondary"
-                                            >
-                                                {downloadState === "loading" ? "Checking..." : "Find File"}
-                                            </Button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </TabsContent>
-                        </CardContent>
-                    </Tabs>
-                </Card>
+                                                        <Button
+                                                            onClick={() => checkCode()}
+                                                            disabled={downloadCode.length !== 6 || downloadState === "loading"}
+                                                            className="w-full gap-2"
+                                                            size="lg"
+                                                        >
+                                                            {downloadState === "loading" ? "Searching..." : "Find File"}
+                                                        </Button>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </TabsContent>
+
+                                    </motion.div>
+                                )
+                                }
+                            </AnimatePresence >
+                        </div >
+                    </Tabs >
+                </motion.div >
 
                 {/* Compact Recent Files */}
                 <AnimatePresence>
-                    {recentTransfers.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-6"
-                        >
-                            <div className="flex items-center justify-between mb-2 px-2">
-                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Files</h3>
-                                <button onClick={clearRecentTransfers} className="text-[10px] text-muted-foreground hover:text-destructive transition-colors">CLEAR</button>
-                            </div>
-                            <div className="space-y-2">
-                                {recentTransfers.map((t) => (
-                                    <div
-                                        key={t.code}
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(t.code);
-                                        }}
-                                        className="bg-background/40 hover:bg-background/60 backdrop-blur-sm border rounded-lg p-2.5 flex items-center gap-3 transition-colors cursor-pointer group"
+                    {
+                        recentTransfers.length > 0 && (
+                            <motion.div
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                    hidden: { opacity: 0 },
+                                    visible: {
+                                        opacity: 1,
+                                        transition: {
+                                            staggerChildren: 0.1
+                                        }
+                                    }
+                                }}
+                                className="mt-6"
+                            >
+                                <div className="flex items-center justify-between mb-4 px-1">
+                                    <h3 className="text-sm font-medium text-muted-foreground">Recent Transfers</h3>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={clearRecentTransfers}
+                                        className="h-6 w-6 text-muted-foreground hover:text-primary"
                                     >
-                                        <div className="bg-primary/10 text-primary p-1.5 rounded">
-                                            <File className="w-3.5 h-3.5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-baseline">
-                                                <p className="text-xs font-medium truncate max-w-[150px]">{t.fileName}</p>
-                                                <span className="text-[10px] text-muted-foreground font-mono bg-muted px-1 rounded group-hover:bg-background transition-colors">
-                                                    {t.code}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </main>
+                                        <Trash className="w-3.5 h-3.5" />
+                                    </Button>
+                                </div>
+                                <div className="space-y-2">
+                                    <LayoutGroup>
+                                        <AnimatePresence mode="popLayout" initial={false}>
+                                            {recentTransfers.map((t) => (
+                                                <motion.div
+                                                    layout
+                                                    key={t.code}
+                                                    variants={{
+                                                        hidden: { opacity: 0, x: -10 },
+                                                        visible: { opacity: 1, x: 0 }
+                                                    }}
+                                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(t.code);
+                                                    }}
+                                                    whileHover={{ x: 5, backgroundColor: "rgba(0, 0, 0, 0.02)" }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    className="bg-card border p-3 flex items-center gap-3 transition-colors cursor-pointer group origin-center hover:shadow-sm rounded-lg"
+                                                >
+                                                    <div className="bg-muted text-muted-foreground p-1.5 rounded-md">
+                                                        <File className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-baseline">
+                                                            <p className="text-sm font-medium truncate max-w-[150px]">{t.fileName}</p>
+                                                            <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded-md group-hover:bg-muted group-hover:text-foreground transition-colors">
+                                                                {t.code}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </LayoutGroup>
+                                </div>
+                            </motion.div>
+                        )
+                    }
+                </AnimatePresence >
+            </div >
+        </main >
     );
 }
