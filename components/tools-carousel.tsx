@@ -61,10 +61,12 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
             <motion.div
                 layoutId="page-header"
                 className="text-center mb-4 md:mb-6 max-w-sm md:max-w-md lg:max-w-lg w-full transform-gpu space-y-2"
+                transition={{ type: "spring", stiffness: 200, damping: 30, mass: 1 }}
             >
                 <motion.h1
                     layoutId="page-title"
                     className="text-4xl font-bold tracking-tight"
+                    transition={{ type: "spring", stiffness: 200, damping: 30, mass: 1 }}
                 >
                     <AnimatePresence mode="wait">
                         <motion.span
@@ -81,6 +83,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                 <motion.p
                     layoutId="page-subtitle"
                     className="text-muted-foreground text-sm"
+                    transition={{ type: "spring", stiffness: 200, damping: 30, mass: 1 }}
                 >
                     <AnimatePresence mode="wait">
                         <motion.span

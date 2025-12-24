@@ -18,7 +18,12 @@ import { ImageConverter } from "@/components/tools/image-converter";
 import { FaviconGen } from "@/components/tools/favicon-gen";
 import { BackgroundRemover } from "@/components/tools/bg-remover";
 
-const transition = { duration: 0.5, ease: [0.32, 0.72, 0, 1] as const };
+const transition = {
+    type: "spring" as const,
+    stiffness: 200,
+    damping: 30,
+    mass: 1
+};
 
 export default function HomePage() {
     const [showTools, setShowTools] = useState(false);
@@ -48,56 +53,66 @@ export default function HomePage() {
     }
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-visible">
-            <div className="w-full max-w-xs md:max-w-sm text-center space-y-8 overflow-visible">
+        <AnimatePresence mode="wait">
+            <motion.main
+                key="landing"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-visible"
+            >
+                <div className="w-full max-w-xs md:max-w-sm text-center space-y-8 overflow-visible">
 
-                {/* Brand - will morph to header */}
-                <motion.div
-                    layoutId="page-header"
-                    className="space-y-2"
-                    transition={transition}
-                >
-                    <motion.h1
-                        layoutId="page-title"
-                        className="text-4xl font-bold tracking-tight"
+                    {/* Brand - will morph to header */}
+                    <motion.div
+                        layoutId="page-header"
+                        className="space-y-2"
                         transition={transition}
                     >
-                        vxid.cc
-                    </motion.h1>
+                        <motion.h1
+                            layoutId="page-title"
+                            className="text-4xl font-bold tracking-tight"
+                            transition={transition}
+                        >
+                            vxid.cc
+                        </motion.h1>
+                        <motion.p
+                            layoutId="page-subtitle"
+                            className="text-muted-foreground text-sm"
+                            transition={transition}
+                        >
+                            all tools u need :&gt;
+                        </motion.p>
+                    </motion.div>
+
+                    {/* Enter Button */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                    >
+                        <Button
+                            size="lg"
+                            className="w-full text-base py-6 rounded-xl"
+                            onClick={() => setShowTools(true)}
+                        >
+                            enter
+                        </Button>
+                    </motion.div>
+
+                    {/* Tagline */}
                     <motion.p
-                        layoutId="page-subtitle"
-                        className="text-muted-foreground text-sm"
-                        transition={transition}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: 0.3, duration: 0.2 }}
+                        className="text-xs text-muted-foreground/50"
                     >
-                        all tools u need :&gt;
+                        the tools you keep forgetting to bookmark
                     </motion.p>
-                </motion.div>
-
-                {/* Enter Button */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.4 }}
-                >
-                    <Button
-                        size="lg"
-                        className="w-full text-base py-6 rounded-xl"
-                        onClick={() => setShowTools(true)}
-                    >
-                        enter
-                    </Button>
-                </motion.div>
-
-                {/* Tagline */}
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.3 }}
-                    className="text-xs text-muted-foreground/50"
-                >
-                    the tools you keep forgetting to bookmark
-                </motion.p>
-            </div>
-        </main>
+                </div>
+            </motion.main>
+        </AnimatePresence>
     );
 }
