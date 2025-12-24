@@ -106,18 +106,21 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
             </div>
 
             {/* Dot indicators */}
-            <div className="flex gap-2 mt-6">
-                {TOOLS.map((tool, index) => (
-                    <button
-                        key={tool.id}
-                        onClick={() => selectTool(index)}
-                        className={`w-2 h-2 rounded-full transition-all duration-200 ${index === currentIndex
-                            ? "bg-primary w-6"
-                            : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                            }`}
-                        aria-label={`Go to ${tool.name}`}
-                    />
-                ))}
+            <div className="flex flex-col items-center gap-2 mt-6">
+                <div className="flex gap-2">
+                    {TOOLS.map((tool, index) => (
+                        <button
+                            key={tool.id}
+                            onClick={() => selectTool(index)}
+                            className={`w-2 h-2 rounded-full transition-all duration-200 ${index === currentIndex
+                                ? "bg-primary w-6"
+                                : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                                }`}
+                            aria-label={`Go to ${tool.name}`}
+                        />
+                    ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground/40">tap dots or use dropdown below</p>
             </div>
 
             {/* Tool dropdown menu */}
