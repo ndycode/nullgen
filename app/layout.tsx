@@ -31,6 +31,13 @@ const themeScript = `
   })();
 `;
 
+// Disable right-click globally
+const disableRightClickScript = `
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,6 +47,7 @@ export default function RootLayout({
     <html lang="en" className={`${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: disableRightClickScript }} />
       </head>
       <body className={`${jetbrainsMono.className} antialiased relative min-h-screen`}>
         <div className="fixed inset-0 z-0 bg-background"></div>
