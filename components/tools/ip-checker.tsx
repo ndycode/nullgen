@@ -36,30 +36,31 @@ export function IpChecker() {
         setError("");
 
         try {
-            const res = await fetch("http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,hosting,query");
+            // Use ipapi.co which supports HTTPS
+            const res = await fetch("https://ipapi.co/json/");
             const json = await res.json();
 
-            if (json.status === "fail") {
-                throw new Error(json.message || "Failed to get IP info");
+            if (json.error) {
+                throw new Error(json.reason || "Failed to get IP info");
             }
 
             setData({
-                ip: json.query,
-                country: json.country,
-                countryCode: json.countryCode,
-                region: json.region,
-                regionName: json.regionName,
+                ip: json.ip,
+                country: json.country_name,
+                countryCode: json.country_code,
+                region: json.region_code,
+                regionName: json.region,
                 city: json.city,
-                zip: json.zip,
-                lat: json.lat,
-                lon: json.lon,
+                zip: json.postal,
+                lat: json.latitude,
+                lon: json.longitude,
                 timezone: json.timezone,
-                isp: json.isp,
+                isp: json.org,
                 org: json.org,
-                as: json.as,
-                mobile: json.mobile,
-                proxy: json.proxy,
-                hosting: json.hosting,
+                as: json.asn,
+                mobile: false,
+                proxy: false,
+                hosting: json.org?.toLowerCase().includes("cloud") || json.org?.toLowerCase().includes("hosting") || false,
             });
         } catch (err: any) {
             setError(err.message || "Failed to fetch IP data");
