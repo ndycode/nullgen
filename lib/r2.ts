@@ -120,6 +120,28 @@ class R2StorageService {
             console.error("Failed to delete from R2:", error);
         }
     }
+
+    // Share-specific metadata (prefixed with 'share-')
+    async getShareMetadata(code: string): Promise<any | null> {
+        try {
+            const buffer = await this.downloadRaw(`share-${code}.json`);
+            return JSON.parse(buffer.toString());
+        } catch (error) {
+            return null;
+        }
+    }
+
+    async saveShareMetadata(code: string, metadata: any): Promise<void> {
+        await this.uploadFile(
+            Buffer.from(JSON.stringify(metadata)),
+            `share-${code}.json`,
+            "application/json"
+        );
+    }
+
+    async deleteShareMetadata(code: string): Promise<void> {
+        await this.deleteFile(`share-${code}.json`);
+    }
 }
 
 export const r2Storage = new R2StorageService();

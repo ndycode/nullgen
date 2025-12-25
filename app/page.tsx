@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ToolsCarousel } from "@/components/tools-carousel";
 import { DeadDrop } from "@/components/tools/dead-drop";
 import { QRGen } from "@/components/tools/qr-gen";
+import { LinkShortener } from "@/components/tools/link-shortener";
+import { Pastebin } from "@/components/tools/pastebin";
+import { ImageHost } from "@/components/tools/image-host";
+import { SecretNote } from "@/components/tools/secret-note";
+import { CodeShare } from "@/components/tools/code-share";
+import { JsonShare } from "@/components/tools/json-share";
+import { CsvShare } from "@/components/tools/csv-share";
 import { PassGen } from "@/components/tools/passgen";
 import { ColorPicker } from "@/components/tools/color-picker";
 import { HashGen } from "@/components/tools/hash-gen";
@@ -62,7 +69,21 @@ export default function HomePage() {
                 <DeadDrop />
                 {/* 2. qr-gen */}
                 <QRGen />
-                {/* 3. passgen */}
+                {/* 3. link-shortener */}
+                <LinkShortener />
+                {/* 4. pastebin */}
+                <Pastebin />
+                {/* 5. image-host */}
+                <ImageHost />
+                {/* 6. secret-note */}
+                <SecretNote />
+                {/* 7. code-share */}
+                <CodeShare />
+                {/* 8. json-share */}
+                <JsonShare />
+                {/* 9. csv-share */}
+                <CsvShare />
+                {/* 10. passgen */}
                 <PassGen />
                 {/* 4. color */}
                 <ColorPicker />
