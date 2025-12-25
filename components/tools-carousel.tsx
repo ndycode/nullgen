@@ -81,13 +81,13 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
 
             {/* Content with inline arrows */}
             <div className="flex items-center gap-1 sm:gap-2 md:gap-6 w-full max-w-sm md:max-w-xl lg:max-w-2xl">
-                {/* Left arrow - minimal */}
+                {/* Left arrow - visible on all screens with larger tap target on mobile */}
                 <button
                     onClick={() => paginate(-1)}
                     disabled={currentIndex === 0}
-                    className="hidden md:flex items-center justify-center p-2 text-muted-foreground hover:text-primary disabled:opacity-20 disabled:hover:text-muted-foreground transition-colors shrink-0"
+                    className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:p-2 text-muted-foreground hover:text-primary active:scale-95 disabled:opacity-20 disabled:hover:text-muted-foreground transition-all shrink-0"
                 >
-                    <CaretLeft className="w-6 h-6" />
+                    <CaretLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
 
                 {/* Tool content */}
@@ -95,13 +95,13 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                     {children[currentIndex]}
                 </div>
 
-                {/* Right arrow - minimal */}
+                {/* Right arrow - visible on all screens with larger tap target on mobile */}
                 <button
                     onClick={() => paginate(1)}
                     disabled={currentIndex === children.length - 1}
-                    className="hidden md:flex items-center justify-center p-2 text-muted-foreground hover:text-primary disabled:opacity-20 disabled:hover:text-muted-foreground transition-colors shrink-0"
+                    className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:p-2 text-muted-foreground hover:text-primary active:scale-95 disabled:opacity-20 disabled:hover:text-muted-foreground transition-all shrink-0"
                 >
-                    <CaretRight className="w-6 h-6" />
+                    <CaretRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
             </div>
 

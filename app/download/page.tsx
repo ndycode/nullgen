@@ -224,12 +224,12 @@ export default function DownloadPage() {
                                         disabled={downloadState === "loading"}
                                     >
                                         <InputOTPGroup>
-                                            <InputOTPSlot index={0} className="w-14 h-16 text-2xl" />
-                                            <InputOTPSlot index={1} className="w-14 h-16 text-2xl" />
-                                            <InputOTPSlot index={2} className="w-14 h-16 text-2xl" />
-                                            <InputOTPSlot index={3} className="w-14 h-16 text-2xl" />
-                                            <InputOTPSlot index={4} className="w-14 h-16 text-2xl" />
-                                            <InputOTPSlot index={5} className="w-14 h-16 text-2xl" />
+                                            <InputOTPSlot index={0} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                            <InputOTPSlot index={1} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                            <InputOTPSlot index={2} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                            <InputOTPSlot index={3} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                            <InputOTPSlot index={4} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                            <InputOTPSlot index={5} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
                                         </InputOTPGroup>
                                     </InputOTP>
 
