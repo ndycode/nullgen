@@ -1,144 +1,102 @@
 # vxid.cc
 
-A privacy-first toolkit with 16 essential utilities — all running client-side in your browser. No sign-ups, no tracking, just useful tools. Developed as a personal project to provide quick access to commonly needed web utilities.
+A privacy-first toolkit with 38+ browser utilities. No sign-ups, no tracking.
 
-## Overview
-
-vxid.cc provides users with instant access to commonly needed tools without the friction of sign-ups or advertisements. The application handles file sharing, text manipulation, image processing, and code generation while keeping all operations client-side for maximum privacy.
-
-### Core Capabilities
-
-- **Dead Drop file sharing** with 6-digit codes, password protection, and auto-expiry
-- **Client-side image processing** including format conversion, compression, resizing, and AI background removal
-- **Privacy tools** for EXIF stripping, anti-hash pixel noise, and fake metadata injection
-- **Text utilities** for cleaning, case conversion, word counting, and hashing
-- **Generator tools** for passwords, QR codes, favicons, and color palettes
-
-## Architecture
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Frontend | Next.js 15 (App Router) | Server/client React components with TypeScript |
-| Backend | Cloudflare R2 | Object storage for dead drop file sharing |
-| Styling | Tailwind CSS v4 | Utility-first CSS framework |
-| Components | shadcn/ui | Accessible, customizable UI primitives |
-| Animations | Framer Motion | UI transitions and micro-interactions |
-| Icons | Phosphor Icons | Consistent icon system |
-
-### Key Design Decisions
-
-1. **Client-side processing**: All tools except dead drop run entirely in the browser
-2. **Dark mode first**: Designed for dark mode with optional light theme
-3. **Mobile-first responsive**: Carousel navigation on mobile, inline arrows on desktop
-4. **No native browser pickers**: Custom styled inputs for consistent theming
-
-## Project Structure
-
-```
-├── app/
-│   ├── page.tsx              # Landing page + tools carousel
-│   ├── download/page.tsx     # File download page
-│   └── api/                  # Upload/download endpoints
-├── components/
-│   ├── tools/                # 16 tool components
-│   │   ├── dead-drop.tsx     # File sharing with codes
-│   │   ├── qr-gen.tsx        # QR code generator
-│   │   ├── passgen.tsx       # Password generator
-│   │   ├── color-picker.tsx  # Color converter
-│   │   ├── privacy-stripper.tsx # EXIF removal + anti-hash
-│   │   ├── image-compressor.tsx # Bulk compression
-│   │   ├── bulk-resizer.tsx  # Bulk resize with presets
-│   │   ├── word-count.tsx    # Word/char counter
-│   │   ├── case-converter.tsx # Case transformation
-│   │   ├── text-cleaner.tsx  # Whitespace cleaner
-│   │   ├── emoji-picker.tsx  # Emoji search
-│   │   ├── image-converter.tsx # Format converter
-│   │   ├── favicon-gen.tsx   # Favicon generator
-│   │   ├── hash-gen.tsx      # Text hashing
-│   │   ├── date-diff.tsx     # Date calculator
-│   │   └── bg-remover.tsx    # AI background removal
-│   ├── tools-carousel.tsx    # Navigation and layout
-│   └── ui/                   # shadcn components
-└── lib/
-    └── tools-config.ts       # Tool definitions and categories
-```
-
-## Prerequisites
-
-- Node.js 18.18 or higher (Node 20 recommended)
-- npm 9+ (or equivalent package manager)
-- Cloudflare R2 account (only for dead drop feature)
-
-## Setup Instructions
-
-### 1. Clone and Install
+## Quick Start
 
 ```bash
-git clone https://github.com/ndycode/vxid.cc.git
-cd vxid.cc
 npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env.local` file with:
-
-```env
-R2_ACCOUNT_ID=your_account_id
-R2_ACCESS_KEY_ID=your_access_key
-R2_SECRET_ACCESS_KEY=your_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_PUBLIC_URL=your_public_url
-```
-
-### 3. Development
-
-```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000`
+## Tools
 
-### 4. Production Build
+<details>
+<summary><strong>Generate (15 tools)</strong></summary>
 
-```bash
-npm run build
-npm start
+| Tool | Description |
+|------|-------------|
+| pass | Secure passwords |
+| color | HEX/RGB/HSL converter |
+| barcode | CODE128, EAN-13, UPC, CODE39 |
+| fake | Test names, emails, phones |
+| palette | Color harmonies |
+| card | Test credit cards |
+| string | Random strings |
+| integer | Random numbers |
+| sequence | Shuffle sequences |
+| username | Creative usernames |
+| business | Company names |
+| iban | Test bank accounts |
+| mac | MAC addresses |
+| hash | MD5, SHA-256, SHA-512 |
+| uuid | UUID v4 |
+
+</details>
+
+<details>
+<summary><strong>Text (10 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| count | Words, characters, reading time |
+| case | UPPER/lower/Title/camelCase |
+| clean | Strip whitespace |
+| emoji | Emoji search |
+| days | Date calculator |
+| dedup | Remove duplicates |
+| reverse | Reverse text |
+| chars | Special characters |
+| numbers | Base converter |
+
+</details>
+
+<details>
+<summary><strong>Image (11 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| privacy | EXIF stripper + anti-hash |
+| compress | Bulk compression |
+| resize | Bulk resize with presets |
+| convert | PNG/JPG/WebP converter |
+| favicon | Emoji to .ico |
+| erase | AI background removal |
+| crop | Crop and rotate |
+| split | Grid splitter |
+| svg | SVG optimizer |
+| pick | Color extractor |
+| watermark | Add text watermarks |
+| ratio | Aspect calculator |
+
+</details>
+
+<details>
+<summary><strong>Sharing (2 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| drop | File sharing with 6-digit codes |
+| qr | QR code generator |
+
+</details>
+
+## Tech Stack
+
+- **Next.js 15** - React framework
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **Cloudflare R2** - File storage (dead drop only)
+
+## Environment Variables
+
+```env
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=
 ```
-
-## Tools Reference
-
-### Sharing
-| Tool | Description | Dependencies |
-|------|-------------|--------------|
-| **drop** | File sharing with 6-digit codes | Cloudflare R2 |
-| **qr** | Instant QR code generation | qrcode.react |
-
-### Generate
-| Tool | Description | Dependencies |
-|------|-------------|--------------|
-| **pass** | Secure password generator | - |
-| **color** | Color format converter (HEX/RGB/HSL) | - |
-| **hash** | MD5, SHA-256, SHA-512 hashing | - |
-
-### Text
-| Tool | Description | Dependencies |
-|------|-------------|--------------|
-| **count** | Word, character, reading time | - |
-| **case** | UPPER / lower / Title case | - |
-| **clean** | Strip whitespace and empty lines | - |
-| **emoji** | Search and copy emojis | - |
-| **days** | Days between dates calculator | - |
-
-### Image
-| Tool | Description | Dependencies |
-|------|-------------|--------------|
-| **privacy** | EXIF stripper + anti-hash + fake metadata | piexifjs, jszip |
-| **compress** | Bulk image compression | jszip |
-| **resize** | Bulk resize with presets (FHD, HD, etc) | jszip |
-| **convert** | PNG ↔ JPG ↔ WebP converter | - |
-| **favicon** | Emoji to .ico generator | - |
-| **erase** | AI background removal | @imgly/background-removal |
 
 ## License
 

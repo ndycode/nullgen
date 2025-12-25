@@ -40,7 +40,7 @@ export function EmojiPicker() {
     };
 
     return (
-        <div className="bg-card border rounded-2xl p-4 space-y-3">
+        <div className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3">
             {/* Search */}
             <div className="relative">
                 <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -87,8 +87,8 @@ export function EmojiPicker() {
                             key={cat}
                             onClick={() => setCategory(cat as keyof typeof EMOJI_DATA)}
                             className={`px-3 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors ${category === cat
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground"
                                 }`}
                         >
                             {cat}

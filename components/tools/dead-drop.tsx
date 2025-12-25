@@ -10,6 +10,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { QRModal } from "@/components/qr-modal";
 import { getFileIcon } from "@/lib/file-icons";
 import confetti from "canvas-confetti";
+import { CONFETTI_COLORS } from "@/lib/colors";
 import {
     UploadSimple,
     CheckCircle,
@@ -62,6 +63,7 @@ export function DeadDrop() {
     } | null>(null);
     const [downloadPassword, setDownloadPassword] = useState("");
     const [showDownloadPassword, setShowDownloadPassword] = useState(false);
+    const [buttonGlow, setButtonGlow] = useState(false);
 
     const formatSize = (bytes: number) => {
         if (bytes === 0) return "0 B";
@@ -134,7 +136,7 @@ export function DeadDrop() {
                         particleCount: 100,
                         spread: 70,
                         origin: { y: 0.6 },
-                        colors: ['#ec4899', '#f472b6', '#f9a8d4'],
+                        colors: CONFETTI_COLORS,
                     });
                 } catch {
                     setUploadError("Invalid response");
@@ -267,7 +269,7 @@ export function DeadDrop() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 8 }}
                         transition={transition}
-                        className="bg-card border rounded-2xl p-4"
+                        className="bg-card border rounded-2xl p-3 sm:p-4"
                     >
                         {uploadStatus === "done" ? (
                             <div className="py-4 space-y-4">
@@ -409,7 +411,7 @@ export function DeadDrop() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -8 }}
                         transition={transition}
-                        className="bg-card border rounded-2xl p-4"
+                        className="bg-card border rounded-2xl p-3 sm:p-4"
                     >
                         {downloadStatus === "ready" || downloadStatus === "downloading" ? (
                             <div className="py-6 text-center space-y-4">
@@ -449,7 +451,7 @@ export function DeadDrop() {
                                     <p className="text-sm text-muted-foreground">Enter 6-digit code</p>
                                 </div>
                                 <div className="flex justify-center">
-                                    <InputOTP maxLength={6} value={code} onChange={(v) => { setCode(v); setError(""); if (v.length === 6) setTimeout(checkCode, 50); }}>
+                                    <InputOTP maxLength={6} value={code} onChange={(v) => { setCode(v); setError(""); if (v.length === 6) { setButtonGlow(true); setTimeout(() => setButtonGlow(false), 1000); setTimeout(checkCode, 50); } }}>
                                         <InputOTPGroup className="gap-1.5">
                                             {[0, 1, 2, 3, 4, 5].map(i => (
                                                 <InputOTPSlot key={i} index={i} className="w-9 h-11 rounded-lg border-2 text-base" />
@@ -458,7 +460,7 @@ export function DeadDrop() {
                                     </InputOTP>
                                 </div>
                                 {error && <p className="text-sm text-destructive flex items-center justify-center gap-1"><Warning weight="bold" className="w-4 h-4" /> {error}</p>}
-                                <Button onClick={checkCode} disabled={code.length !== 6 || downloadStatus === "loading"} className="w-full" size="lg">
+                                <Button onClick={checkCode} disabled={code.length !== 6 || downloadStatus === "loading"} className={`w-full transition-all duration-300 ${buttonGlow ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-[0_0_20px_rgba(236,72,153,0.5)]" : ""}`} size="lg">
                                     {downloadStatus === "loading" ? "Checking..." : "Get File"}
                                 </Button>
                             </div>

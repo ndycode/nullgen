@@ -138,6 +138,20 @@
   * {
     @apply border-border;
     text-transform: lowercase;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none !important;
+    /* Firefox */
+    -ms-overflow-style: none !important;
+    /* IE and Edge */
+  }
+
+  *::-webkit-scrollbar,
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-thumb {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
   }
 
   body {
@@ -333,6 +347,31 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   border: 2px solid var(--background);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Shimmer animation for dropdown text */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.dropdown-shimmer {
+  background: linear-gradient(90deg,
+      #ec4899 0%,
+      #fff 25%,
+      #ec4899 50%,
+      #fff 75%,
+      #ec4899 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 1s ease-in-out;
 }
 
 @layer base {

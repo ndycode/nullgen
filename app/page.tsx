@@ -20,6 +20,28 @@ import { BackgroundRemover } from "@/components/tools/bg-remover";
 import { PrivacyStripper } from "@/components/tools/privacy-stripper";
 import { ImageCompressor } from "@/components/tools/image-compressor";
 import { BulkResizer } from "@/components/tools/bulk-resizer";
+import { ImageCropper } from "@/components/tools/image-cropper";
+import { SvgOptimizer } from "@/components/tools/svg-optimizer";
+import { AspectRatioCalc } from "@/components/tools/aspect-ratio-calc";
+import { ColorFromImage } from "@/components/tools/color-from-image";
+import { ImageWatermarker } from "@/components/tools/image-watermarker";
+import { ImageSplitter } from "@/components/tools/image-splitter";
+import { DuplicateRemover } from "@/components/tools/duplicate-remover";
+import { TextReverser } from "@/components/tools/text-reverser";
+import { CharacterMap } from "@/components/tools/character-map";
+import { NumberConverter } from "@/components/tools/number-converter";
+import { UuidGenerator } from "@/components/tools/uuid-generator";
+import { BarcodeGen } from "@/components/tools/barcode-gen";
+import { FakeDataGen } from "@/components/tools/fake-data-gen";
+import { ColorPaletteGen } from "@/components/tools/color-palette-gen";
+import { CreditCardGen } from "@/components/tools/credit-card-gen";
+import { StringGen } from "@/components/tools/string-gen";
+import { IntegerGen } from "@/components/tools/integer-gen";
+import { SequenceGen } from "@/components/tools/sequence-gen";
+import { UsernameGen } from "@/components/tools/username-gen";
+import { BusinessNameGen } from "@/components/tools/business-name-gen";
+import { IbanGen } from "@/components/tools/iban-gen";
+import { MacGen } from "@/components/tools/mac-gen";
 
 const transition = {
     type: "spring" as const,
@@ -32,29 +54,86 @@ export default function HomePage() {
     const [showTools, setShowTools] = useState(false);
 
     if (showTools) {
+        // IMPORTANT: Children order MUST match TOOLS array in tools-config.ts exactly!
+        // The carousel uses the index to sync between children and TOOLS array
         return (
             <ToolsCarousel onBack={() => setShowTools(false)}>
-                {/* Most used */}
+                {/* 1. dead-drop */}
                 <DeadDrop />
+                {/* 2. qr-gen */}
                 <QRGen />
+                {/* 3. passgen */}
                 <PassGen />
+                {/* 4. color */}
                 <ColorPicker />
-                {/* New image tools */}
+                {/* 5. barcode */}
+                <BarcodeGen />
+                {/* 6. fakedata */}
+                <FakeDataGen />
+                {/* 7. palette */}
+                <ColorPaletteGen />
+                {/* 8. testcard */}
+                <CreditCardGen />
+                {/* 9. stringgen */}
+                <StringGen />
+                {/* 10. integergen */}
+                <IntegerGen />
+                {/* 11. sequencegen */}
+                <SequenceGen />
+                {/* 12. usernamegen */}
+                <UsernameGen />
+                {/* 13. businessgen */}
+                <BusinessNameGen />
+                {/* 14. ibangen */}
+                <IbanGen />
+                {/* 15. macgen */}
+                <MacGen />
+                {/* 16. privacy */}
                 <PrivacyStripper />
+                {/* 6. compress */}
                 <ImageCompressor />
+                {/* 7. resize */}
                 <BulkResizer />
-                {/* Text tools */}
+                {/* 8. word-count */}
                 <WordCount />
+                {/* 9. case */}
                 <CaseConverter />
+                {/* 10. text-clean */}
                 <TextCleaner />
+                {/* 11. emoji */}
                 <EmojiPicker />
-                {/* More image tools */}
+                {/* 12. image (convert) */}
                 <ImageConverter />
+                {/* 13. favicon */}
                 <FaviconGen />
-                {/* Least used */}
+                {/* 14. hash */}
                 <HashGen />
+                {/* 15. date-diff */}
                 <DateDiff />
+                {/* 16. dedup */}
+                <DuplicateRemover />
+                {/* 17. reverse */}
+                <TextReverser />
+                {/* 18. charmap */}
+                <CharacterMap />
+                {/* 19. numconv */}
+                <NumberConverter />
+                {/* 20. uuid */}
+                <UuidGenerator />
+                {/* 21. bg-remove */}
                 <BackgroundRemover />
+                {/* 22. crop */}
+                <ImageCropper />
+                {/* 23. svg-opt */}
+                <SvgOptimizer />
+                {/* 24. ratio */}
+                <AspectRatioCalc />
+                {/* 25. pick-color */}
+                <ColorFromImage />
+                {/* 26. watermark */}
+                <ImageWatermarker />
+                {/* 27. split */}
+                <ImageSplitter />
             </ToolsCarousel>
         );
     }

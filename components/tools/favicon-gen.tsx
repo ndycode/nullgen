@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, UploadSimple, Image as ImageIcon } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { THEME_COLORS, FAVICON_COLORS } from "@/lib/colors";
 
 type Mode = "emoji" | "image";
 
 export function FaviconGen() {
     const [mode, setMode] = useState<Mode>("emoji");
     const [text, setText] = useState("🎯");
-    const [bgColor, setBgColor] = useState("#ec4899");
-    const [textColor, setTextColor] = useState("#ffffff");
+    const [bgColor, setBgColor] = useState<string>(THEME_COLORS.primary);
+    const [textColor, setTextColor] = useState<string>(THEME_COLORS.white);
     const [borderRadius, setBorderRadius] = useState(12);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,7 +148,7 @@ export function FaviconGen() {
     };
 
     return (
-        <div className="bg-card border rounded-2xl p-4 space-y-4">
+        <div className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4">
             <canvas ref={canvasRef} className="hidden" />
             <canvas ref={previewCanvasRef} className="hidden" />
             <input
@@ -236,8 +237,7 @@ export function FaviconGen() {
                             className="w-10 h-10 rounded-lg border-2 border-border cursor-pointer hover:scale-105 transition-transform"
                             style={{ backgroundColor: bgColor }}
                             onClick={() => {
-                                const colors = ["#ec4899", "#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#000000", "#ffffff"];
-                                setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+                                setBgColor(FAVICON_COLORS[Math.floor(Math.random() * FAVICON_COLORS.length)]);
                             }}
                             title="Click for random"
                         />
@@ -256,7 +256,7 @@ export function FaviconGen() {
                                 className="w-10 h-10 rounded-lg border-2 border-border cursor-pointer hover:scale-105 transition-transform"
                                 style={{ backgroundColor: textColor }}
                                 onClick={() => {
-                                    setTextColor(textColor === "#ffffff" ? "#000000" : "#ffffff");
+                                    setTextColor(textColor === THEME_COLORS.white ? THEME_COLORS.black : THEME_COLORS.white);
                                 }}
                                 title="Toggle black/white"
                             />

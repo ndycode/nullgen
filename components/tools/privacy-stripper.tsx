@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, UploadSimple, ShieldCheck, Shuffle, Crop } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CANVAS_COLORS } from "@/lib/colors";
 
 interface DeviceData {
     make: string;
@@ -80,7 +81,7 @@ export function PrivacyStripper() {
                 canvas.height = sHeight;
                 const ctx = canvas.getContext('2d')!;
 
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = CANVAS_COLORS.jpegBackground;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
@@ -204,7 +205,7 @@ export function PrivacyStripper() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
         >
             {/* Drop zone */}
             <motion.div
@@ -213,7 +214,7 @@ export function PrivacyStripper() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}
@@ -223,8 +224,8 @@ export function PrivacyStripper() {
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <UploadSimple className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
+                <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
+                <p className="text-xs text-muted-foreground">
                     {files.length > 0
                         ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
                         : 'drop images or click to browse'
@@ -265,7 +266,7 @@ export function PrivacyStripper() {
             <div className="space-y-3">
                 {/* Quality slider */}
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">quality</span>
+                    <span className="text-xs text-muted-foreground">quality</span>
                     <div className="flex items-center gap-2">
                         <input
                             type="range"
@@ -275,7 +276,7 @@ export function PrivacyStripper() {
                             onChange={(e) => setQuality(Number(e.target.value))}
                             className="w-24 accent-primary"
                         />
-                        <span className="text-sm w-10">{quality}%</span>
+                        <span className="text-xs w-10">{quality}%</span>
                     </div>
                 </div>
 
@@ -285,8 +286,8 @@ export function PrivacyStripper() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setAntiHash(!antiHash)}
                         className={`p-2 rounded-lg border text-xs flex flex-col items-center gap-1 transition-colors ${antiHash
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border text-muted-foreground hover:border-primary/50'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/50'
                             }`}
                     >
                         <ShieldCheck className="w-4 h-4" />
@@ -297,8 +298,8 @@ export function PrivacyStripper() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setRandomExif(!randomExif)}
                         className={`p-2 rounded-lg border text-xs flex flex-col items-center gap-1 transition-colors ${randomExif
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border text-muted-foreground hover:border-primary/50'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/50'
                             }`}
                     >
                         <Shuffle className="w-4 h-4" />
@@ -309,8 +310,8 @@ export function PrivacyStripper() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setSafetyCrop(!safetyCrop)}
                         className={`p-2 rounded-lg border text-xs flex flex-col items-center gap-1 transition-colors ${safetyCrop
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border text-muted-foreground hover:border-primary/50'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/50'
                             }`}
                     >
                         <Crop className="w-4 h-4" />
@@ -354,7 +355,7 @@ export function PrivacyStripper() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-sm text-center text-green-500"
+                        className="text-sm text-center text-primary"
                     >
                         {status}
                     </motion.p>

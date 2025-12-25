@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { DownloadSimple, UploadSimple, Spinner, Trash } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CANVAS_COLORS } from "@/lib/colors";
 
 export function BackgroundRemover() {
     const [image, setImage] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export function BackgroundRemover() {
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -106,10 +107,10 @@ export function BackgroundRemover() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => inputRef.current?.click()}
-                        className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                        className="border-2 border-dashed rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
                     >
-                        <UploadSimple className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">tap to upload image</p>
+                        <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
+                        <p className="text-xs text-muted-foreground">tap to upload image</p>
                         <p className="text-xs text-muted-foreground/60 mt-1">png, jpg, webp</p>
                     </motion.div>
                 ) : (
@@ -138,7 +139,7 @@ export function BackgroundRemover() {
                                     className="w-full aspect-square rounded-lg flex items-center justify-center overflow-hidden"
                                     style={{
                                         background: result
-                                            ? "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 16px 16px"
+                                            ? `repeating-conic-gradient(${CANVAS_COLORS.transparencyChecker} 0% 25%, transparent 0% 50%) 50% / 16px 16px`
                                             : undefined
                                     }}
                                 >

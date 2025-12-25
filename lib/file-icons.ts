@@ -20,66 +20,66 @@ type FileIconInfo = {
 
 const extensionMap: Record<string, FileIconInfo> = {
     // Images
-    jpg: { icon: FileImage, color: "text-emerald-500" },
-    jpeg: { icon: FileImage, color: "text-emerald-500" },
-    png: { icon: FileImage, color: "text-emerald-500" },
-    gif: { icon: FileImage, color: "text-emerald-500" },
-    webp: { icon: FileImage, color: "text-emerald-500" },
-    svg: { icon: FileImage, color: "text-emerald-500" },
-    ico: { icon: FileImage, color: "text-emerald-500" },
+    jpg: { icon: FileImage, color: "text-primary" },
+    jpeg: { icon: FileImage, color: "text-primary" },
+    png: { icon: FileImage, color: "text-primary" },
+    gif: { icon: FileImage, color: "text-primary" },
+    webp: { icon: FileImage, color: "text-primary" },
+    svg: { icon: FileImage, color: "text-primary" },
+    ico: { icon: FileImage, color: "text-primary" },
 
     // PDF
-    pdf: { icon: FilePdf, color: "text-red-500" },
+    pdf: { icon: FilePdf, color: "text-destructive" },
 
     // Video
-    mp4: { icon: FileVideo, color: "text-purple-500" },
-    mov: { icon: FileVideo, color: "text-purple-500" },
-    avi: { icon: FileVideo, color: "text-purple-500" },
-    mkv: { icon: FileVideo, color: "text-purple-500" },
-    webm: { icon: FileVideo, color: "text-purple-500" },
+    mp4: { icon: FileVideo, color: "text-primary" },
+    mov: { icon: FileVideo, color: "text-primary" },
+    avi: { icon: FileVideo, color: "text-primary" },
+    mkv: { icon: FileVideo, color: "text-primary" },
+    webm: { icon: FileVideo, color: "text-primary" },
 
     // Audio
-    mp3: { icon: FileAudio, color: "text-orange-500" },
-    wav: { icon: FileAudio, color: "text-orange-500" },
-    flac: { icon: FileAudio, color: "text-orange-500" },
-    ogg: { icon: FileAudio, color: "text-orange-500" },
-    m4a: { icon: FileAudio, color: "text-orange-500" },
+    mp3: { icon: FileAudio, color: "text-primary" },
+    wav: { icon: FileAudio, color: "text-primary" },
+    flac: { icon: FileAudio, color: "text-primary" },
+    ogg: { icon: FileAudio, color: "text-primary" },
+    m4a: { icon: FileAudio, color: "text-primary" },
 
     // Archives
-    zip: { icon: FileZip, color: "text-yellow-500" },
-    rar: { icon: FileZip, color: "text-yellow-500" },
-    "7z": { icon: FileZip, color: "text-yellow-500" },
-    tar: { icon: FileZip, color: "text-yellow-500" },
-    gz: { icon: FileZip, color: "text-yellow-500" },
+    zip: { icon: FileZip, color: "text-muted-foreground" },
+    rar: { icon: FileZip, color: "text-muted-foreground" },
+    "7z": { icon: FileZip, color: "text-muted-foreground" },
+    tar: { icon: FileZip, color: "text-muted-foreground" },
+    gz: { icon: FileZip, color: "text-muted-foreground" },
 
     // Code
-    js: { icon: FileCode, color: "text-yellow-400" },
-    ts: { icon: FileCode, color: "text-blue-500" },
-    jsx: { icon: FileCode, color: "text-cyan-500" },
-    tsx: { icon: FileCode, color: "text-cyan-500" },
-    py: { icon: FileCode, color: "text-green-500" },
-    java: { icon: FileCode, color: "text-red-500" },
-    cpp: { icon: FileCode, color: "text-blue-600" },
-    c: { icon: FileCode, color: "text-blue-600" },
-    html: { icon: FileCode, color: "text-orange-500" },
-    css: { icon: FileCode, color: "text-blue-400" },
-    json: { icon: FileCode, color: "text-yellow-500" },
+    js: { icon: FileCode, color: "text-primary" },
+    ts: { icon: FileCode, color: "text-primary" },
+    jsx: { icon: FileCode, color: "text-primary" },
+    tsx: { icon: FileCode, color: "text-primary" },
+    py: { icon: FileCode, color: "text-primary" },
+    java: { icon: FileCode, color: "text-primary" },
+    cpp: { icon: FileCode, color: "text-primary" },
+    c: { icon: FileCode, color: "text-primary" },
+    html: { icon: FileCode, color: "text-primary" },
+    css: { icon: FileCode, color: "text-primary" },
+    json: { icon: FileCode, color: "text-primary" },
 
     // Documents
-    doc: { icon: FileDoc, color: "text-blue-600" },
-    docx: { icon: FileDoc, color: "text-blue-600" },
-    txt: { icon: FileText, color: "text-gray-500" },
-    md: { icon: FileText, color: "text-gray-500" },
-    rtf: { icon: FileText, color: "text-gray-500" },
+    doc: { icon: FileDoc, color: "text-primary" },
+    docx: { icon: FileDoc, color: "text-primary" },
+    txt: { icon: FileText, color: "text-muted-foreground" },
+    md: { icon: FileText, color: "text-muted-foreground" },
+    rtf: { icon: FileText, color: "text-muted-foreground" },
 
     // Spreadsheets
-    xls: { icon: FileXls, color: "text-green-600" },
-    xlsx: { icon: FileXls, color: "text-green-600" },
-    csv: { icon: FileXls, color: "text-green-600" },
+    xls: { icon: FileXls, color: "text-primary" },
+    xlsx: { icon: FileXls, color: "text-primary" },
+    csv: { icon: FileXls, color: "text-primary" },
 
     // Presentations
-    ppt: { icon: FilePpt, color: "text-orange-600" },
-    pptx: { icon: FilePpt, color: "text-orange-600" },
+    ppt: { icon: FilePpt, color: "text-primary" },
+    pptx: { icon: FilePpt, color: "text-primary" },
 };
 
 export function getFileIcon(filename: string): FileIconInfo {

@@ -1,0 +1,113 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Copy, Check } from "@phosphor-icons/react";
+
+type Category = "symbols" | "arrows" | "math" | "currency" | "punctuation" | "emoji";
+
+const CHAR_CATEGORIES: Record<Category, { label: string; chars: string[] }> = {
+    symbols: {
+        label: "symbols",
+        chars: ["©", "®", "™", "℗", "℠", "§", "¶", "†", "‡", "•", "◦", "‣", "⁂", "※", "⌘", "⌥", "⇧", "⎋", "⏎", "⌫", "⌦", "⇥", "⇤", "♠", "♣", "♥", "♦", "★", "☆", "✓", "✗", "✔", "✘", "✕", "✖", "♀", "♂", "⚡", "☀", "☁", "☂", "☃", "☄", "♨", "⚠", "⚙", "⚛", "☢", "☣", "♻", "⚜", "☮", "☯", "☸", "✡", "☪", "✝", "☦", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"]
+    },
+    arrows: {
+        label: "arrows",
+        chars: ["←", "→", "↑", "↓", "↔", "↕", "↖", "↗", "↘", "↙", "⇐", "⇒", "⇑", "⇓", "⇔", "⇕", "⟵", "⟶", "⟷", "⟸", "⟹", "⟺", "➜", "➝", "➞", "➔", "➟", "➠", "➡", "➢", "➣", "➤", "➥", "➦", "➧", "➨", "➩", "➪", "➫", "➬", "➭", "➮", "➯", "➱", "➲", "↩", "↪", "↫", "↬", "↭", "↮", "↯", "↰", "↱", "↲", "↳", "↴", "↵", "↶", "↷", "↸", "↹", "↺", "↻"]
+    },
+    math: {
+        label: "math",
+        chars: ["±", "×", "÷", "≠", "≈", "≤", "≥", "∞", "∑", "∏", "√", "∛", "∜", "∫", "∂", "∆", "∇", "∈", "∉", "∋", "∌", "∩", "∪", "⊂", "⊃", "⊆", "⊇", "∅", "∀", "∃", "∄", "∴", "∵", "∝", "∠", "∡", "∢", "⊥", "∥", "∦", "⌀", "°", "′", "″", "‰", "‱", "π", "φ", "θ", "α", "β", "γ", "δ", "ε", "λ", "μ", "σ", "ω", "Ω", "Σ", "Δ", "Π", "Φ"]
+    },
+    currency: {
+        label: "currency",
+        chars: ["$", "€", "£", "¥", "₹", "₽", "₩", "₪", "₫", "₴", "₦", "₱", "₿", "₵", "₡", "₢", "₣", "₤", "₥", "₧", "₨", "₭", "₮", "₯", "₰", "₲", "₳", "₶", "₷", "₸", "₺", "₻", "₼", "₾", "¢", "฿", "៛", "﷼", "元", "円", "圓", "원"]
+    },
+    punctuation: {
+        label: "punctuation",
+        chars: ["…", "–", "—", "―", "'", "'", "‚", "‛", "\u201C", "\u201D", "„", "‟", "«", "»", "‹", "›", "¡", "¿", "‽", "⁇", "⁈", "⁉", "‼", "⸮", "·", "•", "◦", "‣", "⁃", "⁌", "⁍", "※", "⁂", "⁕", "†", "‡", "§", "¶", "©", "®", "™", "℗", "℠", "№"]
+    },
+    emoji: {
+        label: "emoji",
+        chars: ["😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😜", "🤪", "😝", "🤑", "🤗", "🤭", "🤫", "🤔", "🤐", "🤨", "😐", "😑", "😶", "😏", "😒", "🙄", "😬", "🤥", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤢", "🤮", "🥵", "🥶", "🥴", "😵", "🤯", "🤠", "🥳", "😎", "🤓", "🧐", "❤️", "🧡", "💛", "💚", "💙", "💜"]
+    }
+};
+
+export function CharacterMap() {
+    const [search, setSearch] = useState("");
+    const [copied, setCopied] = useState<string | null>(null);
+    const [category, setCategory] = useState<Category>("symbols");
+
+    const copyChar = async (char: string) => {
+        await navigator.clipboard.writeText(char);
+        setCopied(char);
+        setTimeout(() => setCopied(null), 1000);
+    };
+
+    const filteredChars = useMemo(() => {
+        if (!search) return CHAR_CATEGORIES[category].chars;
+        const all = Object.values(CHAR_CATEGORIES).flatMap(c => c.chars);
+        return all.filter(c => c.includes(search));
+    }, [search, category]);
+
+    const categories = Object.entries(CHAR_CATEGORIES).map(([id, { label }]) => ({
+        id: id as Category,
+        label
+    }));
+
+    return (
+        <motion.div
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            {/* Search */}
+            <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="search characters..."
+                className="w-full px-3 py-2 text-sm bg-muted/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+
+            {/* Category tabs */}
+            <div className="flex gap-1 overflow-x-auto pb-1">
+                {categories.map((cat) => (
+                    <button
+                        key={cat.id}
+                        onClick={() => { setCategory(cat.id); setSearch(""); }}
+                        className={`px-2.5 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${category === cat.id && !search
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                    >
+                        {cat.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Character grid */}
+            <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
+                {filteredChars.map((char, i) => (
+                    <motion.button
+                        key={`${char}-${i}`}
+                        onClick={() => copyChar(char)}
+                        className={`aspect-square flex items-center justify-center text-lg rounded-lg transition-all ${copied === char
+                            ? "bg-primary text-primary-foreground scale-110"
+                            : "bg-muted hover:bg-muted/80 hover:scale-105"
+                            }`}
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        {char}
+                    </motion.button>
+                ))}
+            </div>
+
+            {/* Info */}
+            <p className="text-xs text-muted-foreground text-center">
+                {filteredChars.length} characters • tap to copy
+            </p>
+        </motion.div>
+    );
+}

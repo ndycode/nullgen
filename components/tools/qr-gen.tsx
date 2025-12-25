@@ -5,14 +5,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { DownloadSimple, Copy, Link as LinkIcon, TextT } from "@phosphor-icons/react";
-import { toast } from "sonner";
+import { DownloadSimple, Copy, Link as LinkIcon, TextT, Check } from "@phosphor-icons/react";
+import { THEME_COLORS, QR_PRESETS } from "@/lib/colors";
 
 export function QRGen() {
     const [text, setText] = useState("");
     const [copied, setCopied] = useState(false);
-    const [fgColor, setFgColor] = useState("#000000");
-    const [bgColor, setBgColor] = useState("#FFFFFF");
+    const [downloaded, setDownloaded] = useState(false);
+    const [fgColor, setFgColor] = useState<string>(THEME_COLORS.black);
+    const [bgColor, setBgColor] = useState<string>(THEME_COLORS.white);
     const [size, setSize] = useState(160);
     const qrRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +24,7 @@ export function QRGen() {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch {
-            toast.error("Failed to copy");
+            // Silent fail
         }
     };
 
@@ -51,23 +52,19 @@ export function QRGen() {
                 link.href = pngUrl;
                 link.click();
 
-                toast.success("Downloaded!");
+                setDownloaded(true);
+                setTimeout(() => setDownloaded(false), 2000);
             }
         };
 
         img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
     };
 
-    const presets = [
-        { fg: "#000000", bg: "#FFFFFF", label: "default" },
-        { fg: "#FFFFFF", bg: "#000000", label: "dark" },
-        { fg: "#ec4899", bg: "#fdf2f8", label: "pink" },
-        { fg: "#3b82f6", bg: "#eff6ff", label: "blue" },
-    ];
+    const presets = QR_PRESETS;
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 flex flex-col space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 flex flex-col space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
         >
@@ -117,8 +114,8 @@ export function QRGen() {
                         key={p.label}
                         onClick={() => { setFgColor(p.fg); setBgColor(p.bg); }}
                         className={`w-8 h-8 rounded-lg border-2 transition-all overflow-hidden ${fgColor === p.fg && bgColor === p.bg
-                                ? "border-primary scale-110"
-                                : "border-border hover:border-muted-foreground"
+                            ? "border-primary scale-110"
+                            : "border-border hover:border-muted-foreground"
                             }`}
                         style={{ backgroundColor: p.bg }}
                         title={p.label}
@@ -163,8 +160,8 @@ export function QRGen() {
                     disabled={!text}
                     className="flex-1 gap-1.5"
                 >
-                    <DownloadSimple className="w-4 h-4" />
-                    Download
+                    {downloaded ? <Check className="w-4 h-4" /> : <DownloadSimple className="w-4 h-4" />}
+                    {downloaded ? "Downloaded!" : "Download"}
                 </Button>
             </div>
         </motion.div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, UploadSimple, Link as LinkIcon, LinkBreak } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CANVAS_COLORS } from "@/lib/colors";
 
 interface Preset {
     label: string;
@@ -86,7 +87,7 @@ export function BulkResizer() {
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d')!;
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = CANVAS_COLORS.jpegBackground;
                 ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
 
@@ -143,7 +144,7 @@ export function BulkResizer() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
         >
             {/* Drop zone */}
             <motion.div
@@ -152,7 +153,7 @@ export function BulkResizer() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}
@@ -162,8 +163,8 @@ export function BulkResizer() {
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <UploadSimple className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
+                <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
+                <p className="text-xs text-muted-foreground">
                     {files.length > 0
                         ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
                         : 'drop images or click to browse'
@@ -294,7 +295,7 @@ export function BulkResizer() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-sm text-center text-green-500"
+                        className="text-sm text-center text-primary"
                     >
                         {status}
                     </motion.p>

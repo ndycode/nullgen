@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { UploadSimple, DownloadSimple, Image as ImageIcon, ArrowRight, X } from "@phosphor-icons/react";
+import { CANVAS_COLORS } from "@/lib/colors";
 
 type ImageFormat = "png" | "jpeg" | "webp";
 
@@ -53,7 +54,7 @@ export function ImageConverter() {
 
             // For JPEG, fill white background (no transparency)
             if (outputFormat === "jpeg") {
-                ctx.fillStyle = "#FFFFFF";
+                ctx.fillStyle = CANVAS_COLORS.jpegBackground;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
@@ -92,7 +93,7 @@ export function ImageConverter() {
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}

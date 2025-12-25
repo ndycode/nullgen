@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check } from "@phosphor-icons/react";
+import { COLOR_PRESETS, THEME_COLORS } from "@/lib/colors";
 
 interface RGB { r: number; g: number; b: number; }
 interface HSL { h: number; s: number; l: number; }
@@ -68,14 +69,10 @@ function hslToRgb(h: number, s: number, l: number): RGB {
     return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
 }
 
-const PRESETS = [
-    "#ec4899", "#f43f5e", "#f97316", "#eab308",
-    "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6",
-    "#000000", "#6b7280", "#ffffff", "#f5f5f4",
-];
+const PRESETS = COLOR_PRESETS;
 
 export function ColorPicker() {
-    const [hex, setHex] = useState("#ec4899");
+    const [hex, setHex] = useState<string>(THEME_COLORS.primary);
     const [rgb, setRgb] = useState<RGB>({ r: 236, g: 72, b: 153 });
     const [hsl, setHsl] = useState<HSL>({ h: 330, s: 81, l: 60 });
     const [copied, setCopied] = useState<string | null>(null);
@@ -122,7 +119,7 @@ export function ColorPicker() {
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 space-y-3"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
         >
@@ -162,7 +159,7 @@ export function ColorPicker() {
                 <Input
                     value={hex}
                     onChange={(e) => updateFromHex(e.target.value)}
-                    placeholder="#ec4899"
+                    placeholder={THEME_COLORS.primary}
                     className="flex-1 font-mono text-sm"
                 />
                 <Button

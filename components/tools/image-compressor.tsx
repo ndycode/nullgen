@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, UploadSimple } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CANVAS_COLORS } from "@/lib/colors";
 
 export function ImageCompressor() {
     const [files, setFiles] = useState<File[]>([]);
@@ -60,7 +61,7 @@ export function ImageCompressor() {
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d')!;
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = CANVAS_COLORS.jpegBackground;
                 ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
 
@@ -135,7 +136,7 @@ export function ImageCompressor() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
         >
             {/* Drop zone */}
             <motion.div
@@ -144,7 +145,7 @@ export function ImageCompressor() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}
@@ -154,8 +155,8 @@ export function ImageCompressor() {
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <UploadSimple className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
+                <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
+                <p className="text-xs text-muted-foreground">
                     {files.length > 0
                         ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
                         : 'drop images or click to browse'
@@ -212,7 +213,7 @@ export function ImageCompressor() {
             {/* Settings */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">quality</span>
+                    <span className="text-xs text-muted-foreground">quality</span>
                     <div className="flex items-center gap-2">
                         <input
                             type="range"
@@ -222,12 +223,12 @@ export function ImageCompressor() {
                             onChange={(e) => setQuality(Number(e.target.value))}
                             className="w-24 accent-primary"
                         />
-                        <span className="text-sm w-10">{quality}%</span>
+                        <span className="text-xs w-10">{quality}%</span>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">max width (px)</span>
+                    <span className="text-xs text-muted-foreground">max width (px)</span>
                     <Input
                         type="number"
                         placeholder="no limit"
@@ -300,7 +301,7 @@ export function ImageCompressor() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-sm text-center text-green-500"
+                        className="text-sm text-center text-primary"
                     >
                         {status}
                     </motion.p>

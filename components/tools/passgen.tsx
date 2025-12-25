@@ -68,7 +68,7 @@ export function PassGen() {
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 flex flex-col space-y-4"
+            className="bg-card border rounded-2xl p-3 sm:p-4 flex flex-col space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -109,7 +109,7 @@ export function PassGen() {
                 onTouchStart={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">length</span>
                     <span className="font-medium">{options.length}</span>
                 </div>

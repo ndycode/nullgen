@@ -48,11 +48,11 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-8 lg:px-12 py-6 relative transform-gpu overflow-visible">
+        <div className="min-h-screen flex flex-col items-center justify-start sm:justify-center px-3 sm:px-6 lg:px-12 py-4 sm:py-6 relative transform-gpu overflow-visible">
             {/* Back button */}
             <button
                 onClick={onBack}
-                className="absolute top-4 left-4 p-2 rounded-lg hover:bg-muted transition-colors"
+                className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 rounded-lg hover:bg-muted transition-colors"
             >
                 <ArrowLeft className="w-5 h-5" />
             </button>
@@ -60,19 +60,19 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
             {/* Header - morphs from home page, then instant updates */}
             <motion.div
                 layoutId="page-header"
-                className="text-center mb-4 md:mb-6 max-w-sm md:max-w-md lg:max-w-lg w-full space-y-2"
+                className="text-center mb-3 sm:mb-4 md:mb-6 max-w-sm md:max-w-md lg:max-w-lg w-full space-y-1 sm:space-y-2 mt-10 sm:mt-0"
                 transition={{ type: "spring", stiffness: 400, damping: 40 }}
             >
                 <motion.h1
                     layoutId="page-title"
-                    className="text-4xl font-bold tracking-tight"
+                    className="text-3xl sm:text-4xl font-bold tracking-tight"
                     transition={{ type: "spring", stiffness: 400, damping: 40 }}
                 >
                     {currentTool.name}
                 </motion.h1>
                 <motion.p
                     layoutId="page-subtitle"
-                    className="text-muted-foreground text-sm"
+                    className="text-muted-foreground text-xs sm:text-sm"
                     transition={{ type: "spring", stiffness: 400, damping: 40 }}
                 >
                     {currentTool.tagline}
@@ -80,7 +80,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
             </motion.div>
 
             {/* Content with inline arrows */}
-            <div className="flex items-center gap-2 md:gap-6 w-full max-w-sm md:max-w-xl lg:max-w-2xl">
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-6 w-full max-w-sm md:max-w-xl lg:max-w-2xl">
                 {/* Left arrow - minimal */}
                 <button
                     onClick={() => paginate(-1)}
@@ -90,7 +90,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                     <CaretLeft className="w-6 h-6" />
                 </button>
 
-                {/* Tool content - no animation for instant switching */}
+                {/* Tool content */}
                 <div className="w-full max-w-sm md:max-w-md lg:max-w-lg relative mx-auto">
                     {children[currentIndex]}
                 </div>
@@ -105,37 +105,28 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                 </button>
             </div>
 
-            {/* Dot indicators */}
-            <div className="flex flex-col items-center gap-2 mt-6">
-                <div className="flex gap-1">
-                    {TOOLS.map((tool, index) => (
-                        <button
-                            key={tool.id}
-                            onClick={() => selectTool(index)}
-                            className="p-2 -m-1 group"
-                            aria-label={`Go to ${tool.name}`}
-                        >
-                            <span className={`block rounded-full transition-all duration-200 ${index === currentIndex
-                                ? "bg-primary w-6 h-2"
-                                : "bg-muted-foreground/30 group-hover:bg-muted-foreground/50 w-2 h-2"
-                                }`} />
-                        </button>
-                    ))}
-                </div>
-                <p className="text-[10px] text-muted-foreground/40">tap dots or use dropdown below</p>
+            {/* Navigation hint */}
+            <div className="flex flex-col items-center gap-2 mt-4 sm:mt-6">
+                <p className="text-[10px] text-muted-foreground/40">use dropdown below</p>
             </div>
 
             {/* Tool dropdown menu */}
             <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50">
                 {/* Clickable tool name with dropdown */}
                 <div className="relative">
-                    <button
+                    <motion.button
                         onClick={() => setShowMenu(!showMenu)}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                        className="text-sm hover:text-foreground transition-all flex items-center gap-1 px-3 py-1.5 rounded-lg"
+                        style={{ color: "#a1a1aa" }}
+                        animate={{
+                            color: ["#a1a1aa", "#ec4899", "#a1a1aa", "#ec4899", "#a1a1aa"],
+                            opacity: [0.6, 1, 0.6, 1, 1]
+                        }}
+                        transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
                     >
                         {currentTool.name}
                         <CaretDown className={`w-3 h-3 transition-transform ${showMenu ? "rotate-180" : ""}`} />
-                    </button>
+                    </motion.button>
 
                     <AnimatePresence>
                         {showMenu && (

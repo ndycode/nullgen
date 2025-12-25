@@ -117,7 +117,7 @@ export function HashGen() {
 
     return (
         <motion.div
-            className="bg-card border rounded-2xl p-4 space-y-3"
+            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
         >
@@ -159,8 +159,8 @@ export function HashGen() {
                 <button
                     onClick={() => setUppercase(!uppercase)}
                     className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${uppercase
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                         }`}
                 >
                     UPPERCASE
