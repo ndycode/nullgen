@@ -48,7 +48,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-start sm:justify-center px-3 sm:px-6 lg:px-12 py-4 sm:py-6 relative transform-gpu overflow-visible">
+        <div className="min-h-screen flex flex-col items-center justify-center px-3 sm:px-6 lg:px-12 py-4 sm:py-6 relative transform-gpu overflow-visible">
             {/* Back button */}
             <button
                 onClick={onBack}
