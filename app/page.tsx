@@ -4,6 +4,19 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ToolsCarousel } from "@/components/tools-carousel";
+// Checker tools
+import { IpChecker } from "@/components/tools/ip-checker";
+import { DnsChecker } from "@/components/tools/dns-checker";
+import { WhoisChecker } from "@/components/tools/whois-checker";
+import { SslChecker } from "@/components/tools/ssl-checker";
+import { PingChecker } from "@/components/tools/ping-checker";
+import { UserAgentChecker } from "@/components/tools/useragent-checker";
+import { ScreenChecker } from "@/components/tools/screen-checker";
+import { CookiesChecker } from "@/components/tools/cookies-checker";
+import { WebGLChecker } from "@/components/tools/webgl-checker";
+import { PasswordChecker } from "@/components/tools/password-checker";
+import { LeakChecker } from "@/components/tools/leak-checker";
+// Sharing tools
 import { DeadDrop } from "@/components/tools/dead-drop";
 import { QRGen } from "@/components/tools/qr-gen";
 import { LinkShortener } from "@/components/tools/link-shortener";
@@ -49,6 +62,9 @@ import { UsernameGen } from "@/components/tools/username-gen";
 import { BusinessNameGen } from "@/components/tools/business-name-gen";
 import { IbanGen } from "@/components/tools/iban-gen";
 import { MacGen } from "@/components/tools/mac-gen";
+import { ImageBlur } from "@/components/tools/image-blur";
+import { ImageRotate } from "@/components/tools/image-rotate";
+import { ImageFilter } from "@/components/tools/image-filter";
 
 const transition = {
     type: "spring" as const,
@@ -65,7 +81,19 @@ export default function HomePage() {
         // The carousel uses the index to sync between children and TOOLS array
         return (
             <ToolsCarousel onBack={() => setShowTools(false)}>
-                {/* 1. dead-drop */}
+                {/* CHECKER TOOLS (1-12) */}
+                <IpChecker />
+                <DnsChecker />
+                <WhoisChecker />
+                <SslChecker />
+                <PingChecker />
+                <UserAgentChecker />
+                <ScreenChecker />
+                <CookiesChecker />
+                <WebGLChecker />
+                <PasswordChecker />
+                <LeakChecker />
+                {/* SHARING TOOLS (13+) */}
                 <DeadDrop />
                 {/* 2. qr-gen */}
                 <QRGen />
@@ -155,6 +183,12 @@ export default function HomePage() {
                 <ImageWatermarker />
                 {/* 27. split */}
                 <ImageSplitter />
+                {/* 28. blur */}
+                <ImageBlur />
+                {/* 29. rotate */}
+                <ImageRotate />
+                {/* 30. filter */}
+                <ImageFilter />
             </ToolsCarousel>
         );
     }

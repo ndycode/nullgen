@@ -1,6 +1,6 @@
 # vxid.cc
 
-A privacy-first toolkit with 45+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
+A privacy-first toolkit with 59+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
 
 ## Overview
 
@@ -8,13 +8,13 @@ vxid.cc provides instant access to commonly needed tools without friction. The a
 
 ### Core Capabilities
 
+- **Checker Tools** — IP lookup, DNS records, WHOIS, SSL check, ping, useragent, screen info, leak detection
 - **Dead Drop File Sharing** — Upload files with 6-digit codes, optional passwords, and auto-expiry
 - **Sharing Tools** — Link shortener, pastebin, image host, secret notes, code/JSON/CSV sharing
-- **Image Processing** — Compress, resize, convert, crop, remove backgrounds, and strip EXIF data
+- **Image Processing** — Compress, resize, convert, crop, blur, rotate, filter, remove backgrounds
 - **Text Utilities** — Word count, case conversion, deduplication, and cleaning
 - **Data Generators** — Passwords, UUIDs, barcodes, test credit cards, usernames, IBANs
 - **Color Tools** — Picker, palette generator, and image color extraction
-- **Privacy Tools** — EXIF stripping, anti-hash pixel noise, and fake metadata injection
 
 ## Architecture
 
@@ -47,7 +47,7 @@ vxid.cc provides instant access to commonly needed tools without friction. The a
 │       ├── download/         # Dead drop download
 │       └── share/            # Share creation & retrieval
 ├── components/
-│   ├── tools/                 # 45 tool components
+│   ├── tools/                 # 59 tool components
 │   ├── tools-carousel.tsx     # Navigation and layout
 │   └── ui/                    # shadcn components
 └── lib/
@@ -111,10 +111,23 @@ npm test
 Test coverage includes:
 - Color system constants (`lib/colors.ts`)
 - Share types and constants (`lib/share-types.ts`)
-- All 45 tool components render correctly
+- All 59 tool components render correctly
 - UI elements and interactions
 
 ## Tools Reference
+
+### Checker (11)
+- **ip** — IP, location, ISP, VPN detection
+- **dns** — DNS records (A, AAAA, MX, TXT, NS)
+- **whois** — Domain registration info
+- **ssl** — SSL certificate checker
+- **ping** — Website latency checker
+- **useragent** — Browser and device info
+- **screen** — Resolution and viewport
+- **cookies** — Browser storage test
+- **webgl** — GPU and graphics info
+- **password** — Password strength analyzer
+- **leak** — Email/password breach checker
 
 ### Sharing (9)
 - **drop** — File sharing with 6-digit codes
@@ -155,7 +168,7 @@ Test coverage includes:
 - **chars** — Special characters
 - **numbers** — Base converter
 
-### Image (11)
+### Image (14)
 - **privacy** — EXIF stripper + anti-hash
 - **compress** — Bulk compression
 - **resize** — Bulk resize with presets
@@ -168,6 +181,9 @@ Test coverage includes:
 - **pick** — Color extractor
 - **watermark** — Add text watermarks
 - **ratio** — Aspect calculator
+- **blur** — Blur or pixelate images
+- **rotate** — Rotate and flip images
+- **filter** — Apply image filters
 
 ## License
 

@@ -1,4 +1,4 @@
-import { Package, QrCode, Key, Palette, Hash, TextAa, TextT, CalendarBlank, Smiley, ArrowsClockwise, ImageSquare, Browser, Eraser, ShieldCheck, FileArrowDown, ArrowsOutSimple, Crop, FileCode, Ruler, Eyedropper, TextT as WatermarkIcon, GridFour, Rows, ArrowsLeftRight, Keyboard, Binary, Fingerprint, Barcode, UserCircle, Swatches, CreditCard, TextAlignLeft, NumberSquareOne, Shuffle, At, Buildings, Bank, WifiHigh } from "@phosphor-icons/react";
+import { Package, QrCode, Key, Palette, Hash, TextAa, TextT, CalendarBlank, Smiley, ArrowsClockwise, ImageSquare, Browser, Eraser, ShieldCheck, FileArrowDown, ArrowsOutSimple, Crop, FileCode, Ruler, Eyedropper, TextT as WatermarkIcon, GridFour, Rows, ArrowsLeftRight, Keyboard, Binary, Fingerprint, Barcode, UserCircle, Swatches, CreditCard, TextAlignLeft, NumberSquareOne, Shuffle, At, Buildings, Bank, WifiHigh, Globe, GlobeSimple, MagnifyingGlass, Lock, WifiSlash, Desktop, Monitor, Cookie, Cube, Code, Password, Warning } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 
 export interface Tool {
@@ -6,12 +6,90 @@ export interface Tool {
     name: string;
     tagline: string;
     icon: Icon;
-    category: "sharing" | "generate" | "text" | "image";
+    category: "checker" | "sharing" | "generate" | "text" | "image";
 }
 
-// Ordered by usage frequency: most used → least used (dead-drop stays first)
+// Ordered by category: checker → sharing → generate → text → image
 export const TOOLS: Tool[] = [
-    // Page 1 - Dead Drop (main feature)
+    // Checker tools (first category)
+    {
+        id: "ip-checker",
+        name: "ip",
+        tagline: "your ip, location, isp",
+        icon: Globe,
+        category: "checker",
+    },
+    {
+        id: "dns-checker",
+        name: "dns",
+        tagline: "lookup dns records",
+        icon: GlobeSimple,
+        category: "checker",
+    },
+    {
+        id: "whois-checker",
+        name: "whois",
+        tagline: "domain registration info",
+        icon: MagnifyingGlass,
+        category: "checker",
+    },
+    {
+        id: "ssl-checker",
+        name: "ssl",
+        tagline: "check ssl certificates",
+        icon: Lock,
+        category: "checker",
+    },
+    {
+        id: "ping-checker",
+        name: "ping",
+        tagline: "website latency checker",
+        icon: WifiHigh,
+        category: "checker",
+    },
+    {
+        id: "useragent-checker",
+        name: "useragent",
+        tagline: "your browser info",
+        icon: Browser,
+        category: "checker",
+    },
+    {
+        id: "screen-checker",
+        name: "screen",
+        tagline: "resolution and viewport",
+        icon: Monitor,
+        category: "checker",
+    },
+    {
+        id: "cookies-checker",
+        name: "cookies",
+        tagline: "browser storage test",
+        icon: Cookie,
+        category: "checker",
+    },
+    {
+        id: "webgl-checker",
+        name: "webgl",
+        tagline: "gpu and graphics info",
+        icon: Cube,
+        category: "checker",
+    },
+    {
+        id: "password-checker",
+        name: "password",
+        tagline: "check password strength",
+        icon: Password,
+        category: "checker",
+    },
+    {
+        id: "leak-checker",
+        name: "leak",
+        tagline: "check email breaches",
+        icon: Warning,
+        category: "checker",
+    },
+    // Sharing tools
     {
         id: "dead-drop",
         name: "drop",
@@ -331,6 +409,27 @@ export const TOOLS: Tool[] = [
         name: "split",
         tagline: "image to grid tiles",
         icon: GridFour,
+        category: "image",
+    },
+    {
+        id: "blur",
+        name: "blur",
+        tagline: "blur or pixelate images",
+        icon: ImageSquare,
+        category: "image",
+    },
+    {
+        id: "rotate",
+        name: "rotate",
+        tagline: "rotate and flip images",
+        icon: ArrowsClockwise,
+        category: "image",
+    },
+    {
+        id: "filter",
+        name: "filter",
+        tagline: "apply image filters",
+        icon: Palette,
         category: "image",
     },
 ];
