@@ -1,83 +1,76 @@
 # vxid.cc
 
-A privacy-first toolkit with 59+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
+A privacy-first toolkit with 64+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
 
-## Overview
-
-vxid.cc provides instant access to commonly needed tools without friction. The application handles file sharing, text manipulation, image processing, and data generation while keeping all operations client-side for maximum privacy.
+## Features
 
 ### Core Capabilities
 
-- **Checker Tools** — IP lookup, DNS records, WHOIS, SSL check, ping, useragent, screen info, leak detection
-- **Dead Drop File Sharing** — Upload files with 6-digit codes, optional passwords, and auto-expiry
+- **Checker Tools** — IP lookup, DNS records, WHOIS, SSL check, ping, user agent, screen info, leak detection
+- **File Sharing** — Dead drop with 6-digit codes, optional passwords, and auto-expiry
 - **Sharing Tools** — Link shortener, pastebin, image host, secret notes, code/JSON/CSV sharing
 - **Image Processing** — Compress, resize, convert, crop, blur, rotate, filter, remove backgrounds
-- **Text Utilities** — Word count, case conversion, deduplication, and cleaning
-- **Data Generators** — Passwords, UUIDs, barcodes, test credit cards, usernames, IBANs
-- **Color Tools** — Picker, palette generator, and image color extraction
+- **Text Utilities** — Word count, case conversion, regex tester, Lorem ipsum, base64 encoding
+- **Data Generators** — Passwords, UUIDs, timestamps, gradients, barcodes, test data
 
-## Architecture
+### User Experience
+
+- **Favorites** — Bookmark frequently-used tools with the heart icon
+- **Recent Tools** — Quick access to your last 6 used tools
+- **Keyboard Shortcuts** — `Esc` to go back, `Cmd/Ctrl+K` for search, arrow keys to navigate
+- **Animated Background** — Subtle floating gradient orbs for visual polish
+- **Skeleton Loaders** — Smooth shimmer loading states
+- **Success Animations** — Confetti feedback on key actions
+
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| Frontend | Next.js 15 (App Router) | Server/client React components with TypeScript |
-| Backend | Cloudflare R2 | Object storage for dead drop file sharing |
-| Styling | Tailwind CSS v4 | Utility-first CSS framework |
-| Components | shadcn/ui | Accessible, customizable UI primitives |
-| Animations | Framer Motion + Lenis | UI transitions and smooth scrolling |
-| Testing | Vitest | Unit and component testing (101+ tests) |
+| Framework | Next.js 15 (App Router) | Server/client React with TypeScript |
+| Storage | Cloudflare R2 | Object storage for file sharing |
+| Styling | Tailwind CSS v4 | Utility-first CSS |
+| Components | shadcn/ui | Accessible UI primitives |
+| Animations | Framer Motion | UI transitions |
+| Color Picker | react-colorful | Custom color selection |
+| Effects | canvas-confetti | Success animations |
 
-### Key Design Decisions
+## Quick Start
 
-1. **Client-side processing** — All tools except dead drop run entirely in the browser
-2. **Dark mode first** — Designed for dark mode with optional light theme
-3. **Inline feedback** — No toast popups; all feedback appears within tool components
-4. **Compact UI** — Tools fit in single cards with collapsible advanced options
-5. **Semantic color system** — Theme-aware colors (`--warning`, `--success`) in `globals.css`
-6. **Mobile-first layout** — Responsive padding (`p-3 sm:p-4`) and `max-w-sm` containers
-7. **Hydration-safe** — All browser APIs called in `useEffect` to prevent SSR mismatches
-8. **Unified global layout** — Every page uses `min-h-screen flex flex-col items-center justify-center`
+```bash
+# Clone and install
+git clone https://github.com/ndycode/vxid.cc.git
+cd vxid.cc
+npm install
+
+# Configure environment (optional, for file sharing)
+cp env.example.txt .env.local
+# Edit .env.local with your R2 credentials
+
+# Start development server
+npm run dev
+```
+
+Visit `http://localhost:3000`
 
 ## Project Structure
 
 ```
 ├── app/
-│   ├── page.tsx              # Landing page + tools carousel
-│   ├── download/page.tsx     # File download page
-│   ├── s/[code]/page.tsx     # Unified share viewer
-│   └── api/
-│       ├── upload/           # Dead drop upload
-│       ├── download/         # Dead drop download
-│       └── share/            # Share creation & retrieval
+│   ├── page.tsx              # Landing + tools carousel
+│   ├── s/[code]/page.tsx     # Share viewer
+│   └── api/                  # Upload/download/share APIs
 ├── components/
-│   ├── tools/                 # 59 tool components
-│   ├── tools-carousel.tsx     # Navigation and layout
-│   └── ui/                    # shadcn components
+│   ├── tools/                # 64 tool components
+│   ├── tools-carousel.tsx    # Navigation with favorites/recent
+│   ├── animated-background.tsx
+│   └── ui/                   # shadcn + custom components
 └── lib/
-    ├── tools-config.ts        # Tool definitions and categories
-    ├── share-types.ts         # Share type definitions
-    └── colors.ts              # Centralized design tokens
+    ├── tools-config.ts       # Tool definitions
+    ├── tool-preferences.ts   # Favorites/recent (localStorage)
+    └── confetti.ts           # Animation utilities
 ```
 
-## Prerequisites
-
-- Node.js 18.18+ (Node 20 recommended)
-- npm 9+
-- Cloudflare R2 account (only for dead drop feature)
-
-## Setup Instructions
-
-### 1. Clone and Install
-
-```bash
-git clone https://github.com/ndycode/vxid.cc.git
-cd vxid.cc
-npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env.local` file:
+## Environment Variables
 
 ```env
 R2_ACCOUNT_ID=your_account_id
@@ -87,14 +80,6 @@ R2_BUCKET_NAME=your_bucket_name
 R2_PUBLIC_URL=your_public_url
 ```
 
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:3000`
-
 ## Available Scripts
 
 | Command | Description |
@@ -102,91 +87,32 @@ Visit `http://localhost:3000`
 | `npm run dev` | Start development server |
 | `npm run build` | Create production build |
 | `npm run start` | Start production server |
-| `npm test` | Run all tests |
-| `npm run test:watch` | Run tests in watch mode |
+| `npm test` | Run test suite |
 
-## Testing
-
-```bash
-npm test
-```
-
-Test coverage includes:
-- Color system constants (`lib/colors.ts`)
-- Share types and constants (`lib/share-types.ts`)
-- All 59 tool components render correctly
-- UI elements and interactions
-
-## Tools Reference
+## Tools (64)
 
 ### Checker (11)
-- **ip** — IP, location, ISP, VPN detection
-- **dns** — DNS records (A, AAAA, MX, TXT, NS)
-- **whois** — Domain registration info
-- **ssl** — SSL certificate checker
-- **ping** — Website latency checker
-- **useragent** — Browser and device info
-- **screen** — Resolution and viewport
-- **cookies** — Browser storage test
-- **webgl** — GPU and graphics info
-- **password** — Password strength analyzer
-- **leak** — Email/password breach checker
+ip, dns, whois, ssl, ping, useragent, screen, cookies, webgl, password, leak
 
 ### Sharing (9)
-- **drop** — File sharing with 6-digit codes
-- **qr** — QR code generator
-- **shorten** — URL shortener with expiry
-- **paste** — Text pastebin with password
-- **imghost** — Quick image sharing
-- **secret** — Self-destructing notes
-- **code** — Code snippets with syntax
-- **json** — JSON sharing with validation
-- **csv** — CSV with table preview
+drop, qr, shorten, paste, imghost, secret, code, json, csv
 
-### Generate (15)
-- **pass** — Secure passwords
-- **color** — HEX/RGB/HSL converter
-- **barcode** — CODE128, EAN-13, UPC, CODE39
-- **fake** — Test names, emails, phones
-- **palette** — Color harmonies
-- **card** — Test credit cards
-- **string** — Random strings
-- **integer** — Random numbers
-- **sequence** — Shuffle sequences
-- **username** — Creative usernames
-- **business** — Company names
-- **iban** — Test bank accounts
-- **mac** — MAC addresses
-- **hash** — MD5, SHA-256, SHA-512
-- **uuid** — UUID v4
+### Generate (16)
+pass, color, barcode, fake, palette, card, string, integer, sequence, username, business, iban, mac, hash, uuid, gradient
 
-### Text (10)
-- **count** — Words, characters, reading time
-- **case** — UPPER/lower/Title/camelCase
-- **clean** — Strip whitespace
-- **emoji** — Emoji search
-- **days** — Date calculator
-- **dedup** — Remove duplicates
-- **reverse** — Reverse text
-- **chars** — Special characters
-- **numbers** — Base converter
+### Text (14)
+count, case, clean, emoji, days, dedup, reverse, chars, numbers, lorem, base64, regex, timestamp, privacy
 
 ### Image (14)
-- **privacy** — EXIF stripper + anti-hash
-- **compress** — Bulk compression
-- **resize** — Bulk resize with presets
-- **convert** — PNG/JPG/WebP converter
-- **favicon** — Emoji to .ico
-- **erase** — AI background removal
-- **crop** — Crop and rotate
-- **split** — Grid splitter
-- **svg** — SVG optimizer
-- **pick** — Color extractor
-- **watermark** — Add text watermarks
-- **ratio** — Aspect calculator
-- **blur** — Blur or pixelate images
-- **rotate** — Rotate and flip images
-- **filter** — Apply image filters
+compress, resize, convert, favicon, erase, crop, split, svg, pick, watermark, ratio, blur, rotate, filter
+
+## Design Principles
+
+1. **Client-side first** — All processing in the browser
+2. **Dark mode default** — With optional light theme
+3. **Mobile-first** — Responsive design throughout
+4. **No sign-ups** — Preferences stored in localStorage
+5. **Instant feedback** — No blocking modals or toasts
 
 ## License
 

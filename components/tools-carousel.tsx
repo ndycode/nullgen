@@ -171,7 +171,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                 <div className="relative">
                     <motion.button
                         onClick={() => setShowMenu(!showMenu)}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 px-3 py-1.5 rounded-lg"
+                        className="text-sm text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 px-3 py-1.5 focus:outline-none"
                         animate={{
                             opacity: [0.6, 1, 0.6, 1, 1]
                         }}
@@ -405,7 +405,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                                 placeholder="Search tools..."
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-muted/50 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-transparent border-none outline-none focus:ring-0 focus:border-none"
                                                 autoFocus
                                             />
                                         </div>
