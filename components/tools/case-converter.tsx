@@ -18,16 +18,16 @@ type CaseType =
     | "inverse";
 
 const CASE_OPTIONS: { id: CaseType; label: string }[] = [
-    { id: "lowercase", label: "lowercase" },
-    { id: "uppercase", label: "UPPERCASE" },
-    { id: "titlecase", label: "Title Case" },
-    { id: "sentencecase", label: "Sentence case" },
-    { id: "camelcase", label: "camelCase" },
-    { id: "pascalcase", label: "PascalCase" },
-    { id: "snakecase", label: "snake_case" },
-    { id: "kebabcase", label: "kebab-case" },
-    { id: "constantcase", label: "CONSTANT_CASE" },
-    { id: "alternating", label: "aLtErNaTiNg" },
+    { id: "lowercase", label: "lower" },
+    { id: "uppercase", label: "UPPER" },
+    { id: "titlecase", label: "Title" },
+    { id: "sentencecase", label: "Sentence" },
+    { id: "camelcase", label: "camel" },
+    { id: "pascalcase", label: "Pascal" },
+    { id: "snakecase", label: "snake" },
+    { id: "kebabcase", label: "kebab" },
+    { id: "constantcase", label: "CONST" },
+    { id: "alternating", label: "aLtErN" },
     { id: "inverse", label: "iNVERSE" },
 ];
 
@@ -145,7 +145,7 @@ export function CaseConverter() {
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
                     >
-                        {opt.label.length > 12 ? opt.label.slice(0, 10) + "…" : opt.label}
+                        {opt.label}
                     </button>
                 ))}
             </div>
