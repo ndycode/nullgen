@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DownloadSimple, X, CaretDown, UploadSimple } from "@phosphor-icons/react";
 import { THEME_COLORS } from "@/lib/colors";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
 type FontStyle = "normal" | "bold" | "italic";
@@ -212,9 +213,8 @@ export function ImageWatermarker() {
                 </div>
                 <div className="space-y-1">
                     <p className="text-[10px] text-muted-foreground">color</p>
-                    <div className="relative h-8">
-                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                        <div className="h-full rounded-lg border cursor-pointer" style={{ backgroundColor: color }} />
+                    <div className="h-8 flex items-center">
+                        <ColorPicker color={color} onChange={setColor} />
                     </div>
                 </div>
             </div>

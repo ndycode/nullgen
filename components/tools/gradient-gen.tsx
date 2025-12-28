@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ArrowClockwise, Plus, X } from "@phosphor-icons/react";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 type Direction = "to right" | "to left" | "to bottom" | "to top" | "to bottom right" | "to bottom left" | "to top right" | "to top left";
 
@@ -89,8 +90,8 @@ export function GradientGen() {
                 <button
                     onClick={() => setType("linear")}
                     className={`flex-1 py-2 text-xs rounded-lg transition-colors ${type === "linear"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
                         }`}
                 >
                     Linear
@@ -98,8 +99,8 @@ export function GradientGen() {
                 <button
                     onClick={() => setType("radial")}
                     className={`flex-1 py-2 text-xs rounded-lg transition-colors ${type === "radial"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
                         }`}
                 >
                     Radial
@@ -123,8 +124,8 @@ export function GradientGen() {
                                 key={dir}
                                 onClick={() => setDirection(dir)}
                                 className={`py-1.5 text-[10px] rounded-lg transition-colors ${direction === dir
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground hover:text-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:text-foreground"
                                     }`}
                             >
                                 {dir.replace("to ", "")}
@@ -149,11 +150,9 @@ export function GradientGen() {
                 </div>
                 {stops.map((stop, i) => (
                     <div key={i} className="flex items-center gap-2">
-                        <input
-                            type="color"
-                            value={stop.color}
-                            onChange={(e) => updateStop(i, { color: e.target.value })}
-                            className="w-8 h-8 rounded cursor-pointer border-0"
+                        <ColorPicker
+                            color={stop.color}
+                            onChange={(color) => updateStop(i, { color })}
                         />
                         <input
                             type="text"
