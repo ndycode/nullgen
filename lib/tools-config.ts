@@ -1,4 +1,4 @@
-import { Package, QrCode, Key, Palette, Hash, TextAa, TextT, CalendarBlank, Smiley, ArrowsClockwise, ImageSquare, Browser, Eraser, ShieldCheck, FileArrowDown, ArrowsOutSimple, Crop, FileCode, Ruler, Eyedropper, TextT as WatermarkIcon, GridFour, Rows, ArrowsLeftRight, Keyboard, Binary, Fingerprint, Barcode, UserCircle, Swatches, CreditCard, TextAlignLeft, NumberSquareOne, Shuffle, At, Buildings, Bank, WifiHigh, Globe, GlobeSimple, MagnifyingGlass, Lock, WifiSlash, Desktop, Monitor, Cookie, Cube, Code, Password, Warning } from "@phosphor-icons/react";
+import { Package, QrCode, Key, Palette, Hash, TextAa, TextT, CalendarBlank, Smiley, ArrowsClockwise, ImageSquare, Browser, Eraser, ShieldCheck, FileArrowDown, ArrowsOutSimple, Crop, FileCode, Ruler, Eyedropper, TextT as WatermarkIcon, GridFour, Rows, ArrowsLeftRight, Keyboard, Binary, Fingerprint, Barcode, UserCircle, Swatches, CreditCard, TextAlignLeft, NumberSquareOne, Shuffle, At, Buildings, Bank, WifiHigh, Globe, GlobeSimple, MagnifyingGlass, Lock, WifiSlash, Desktop, Monitor, Cookie, Cube, Code, Password, Warning, Clock, Gradient } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 
 export interface Tool {
@@ -431,6 +431,42 @@ export const TOOLS: Tool[] = [
         tagline: "apply image filters",
         icon: Palette,
         category: "image",
+    },
+    // New tools
+    {
+        id: "lorem-gen",
+        name: "lorem",
+        tagline: "placeholder text",
+        icon: TextAa,
+        category: "text",
+    },
+    {
+        id: "base64-tool",
+        name: "base64",
+        tagline: "encode ↔ decode",
+        icon: ArrowsLeftRight,
+        category: "text",
+    },
+    {
+        id: "regex-tester",
+        name: "regex",
+        tagline: "test patterns live",
+        icon: MagnifyingGlass,
+        category: "text",
+    },
+    {
+        id: "timestamp-tool",
+        name: "timestamp",
+        tagline: "unix ↔ human time",
+        icon: Clock,
+        category: "text",
+    },
+    {
+        id: "gradient-gen",
+        name: "gradient",
+        tagline: "css gradient builder",
+        icon: Gradient,
+        category: "generate",
     },
 ];
 

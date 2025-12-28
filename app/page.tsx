@@ -65,6 +65,12 @@ import { MacGen } from "@/components/tools/mac-gen";
 import { ImageBlur } from "@/components/tools/image-blur";
 import { ImageRotate } from "@/components/tools/image-rotate";
 import { ImageFilter } from "@/components/tools/image-filter";
+// New tools
+import { LoremGen } from "@/components/tools/lorem-gen";
+import { Base64Tool } from "@/components/tools/base64-tool";
+import { RegexTester } from "@/components/tools/regex-tester";
+import { TimestampTool } from "@/components/tools/timestamp-tool";
+import { GradientGen } from "@/components/tools/gradient-gen";
 
 const transition = {
     type: "spring" as const,
@@ -189,6 +195,12 @@ export default function HomePage() {
                 <ImageRotate />
                 {/* 30. filter */}
                 <ImageFilter />
+                {/* New tools */}
+                <LoremGen />
+                <Base64Tool />
+                <RegexTester />
+                <TimestampTool />
+                <GradientGen />
             </ToolsCarousel>
         );
     }

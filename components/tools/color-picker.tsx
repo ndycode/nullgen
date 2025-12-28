@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check } from "@phosphor-icons/react";
+import { Copy, Check, ArrowClockwise } from "@phosphor-icons/react";
 import { COLOR_PRESETS, THEME_COLORS } from "@/lib/colors";
 
 interface RGB { r: number; g: number; b: number; }
@@ -134,18 +134,29 @@ export function ColorPicker() {
             />
 
             {/* Presets */}
-            <div className="grid grid-cols-6 gap-1.5">
-                {PRESETS.map((color) => (
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">presets</p>
                     <button
-                        key={color}
-                        onClick={() => updateFromHex(color)}
-                        className={`w-full aspect-square rounded-lg border-2 transition-all ${hex.toLowerCase() === color.toLowerCase()
-                            ? "border-primary scale-110"
-                            : "border-transparent hover:scale-105"
-                            }`}
-                        style={{ backgroundColor: color }}
-                    />
-                ))}
+                        onClick={randomColor}
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                        <ArrowClockwise className="w-3 h-3" /> random
+                    </button>
+                </div>
+                <div className="grid grid-cols-6 gap-1.5">
+                    {PRESETS.map((color) => (
+                        <button
+                            key={color}
+                            onClick={() => updateFromHex(color)}
+                            className={`w-full aspect-square rounded-lg border-2 transition-all ${hex.toLowerCase() === color.toLowerCase()
+                                ? "border-primary scale-110"
+                                : "border-transparent hover:scale-105"
+                                }`}
+                            style={{ backgroundColor: color }}
+                        />
+                    ))}
+                </div>
             </div>
 
             {/* Hex input */}
