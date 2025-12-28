@@ -15,7 +15,8 @@ import {
     Image as ImageIcon,
     Code,
     Table,
-    Fire
+    Fire,
+    DownloadSimple
 } from "@phosphor-icons/react";
 import { ShareType } from "@/lib/share-types";
 
@@ -240,12 +241,29 @@ export default function ShareViewerPage() {
                             )}
 
                             {data.type === 'image' && (
-                                <div className="text-center">
-                                    <img
-                                        src={data.content}
-                                        alt={data.originalName || "Shared image"}
-                                        className="max-w-full max-h-96 mx-auto rounded-lg"
-                                    />
+                                <div className="space-y-4">
+                                    <div className="text-center">
+                                        <img
+                                            src={data.content}
+                                            alt={data.originalName || "Shared image"}
+                                            className="max-w-full max-h-96 mx-auto rounded-lg"
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={() => {
+                                            const link = document.createElement("a");
+                                            link.href = data.content;
+                                            link.download = data.originalName || "image.png";
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
+                                        variant="outline"
+                                        className="w-full gap-2"
+                                    >
+                                        <DownloadSimple className="w-4 h-4" />
+                                        Download image
+                                    </Button>
                                 </div>
                             )}
 
