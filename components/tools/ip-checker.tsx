@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Globe, CaretDown, ArrowClockwise } from "@phosphor-icons/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IpData {
     ip: string;
@@ -88,9 +89,14 @@ export function IpChecker() {
             transition={{ duration: 0.3 }}
         >
             {loading ? (
-                <div className="py-8 text-center space-y-2">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-muted-foreground">detecting...</p>
+                <div className="space-y-3 py-2">
+                    <Skeleton className="h-10 w-2/3 mx-auto" />
+                    <div className="grid grid-cols-2 gap-2">
+                        <Skeleton className="h-8" />
+                        <Skeleton className="h-8" />
+                    </div>
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
                 </div>
             ) : error ? (
                 <div className="py-6 text-center space-y-3">

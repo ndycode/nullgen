@@ -6,6 +6,7 @@ import { TransitionProvider } from "@/components/transition-provider";
 import { ClientErrorBoundary } from "@/components/client-error-boundary";
 import { GitHubTyping } from "@/components/github-typing";
 import { LenisProvider } from "@/components/lenis-provider";
+import { AnimatedBackground } from "@/components/animated-background";
 import { Toaster } from "sonner";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -51,7 +52,8 @@ export default function RootLayout({
       </head>
       <body className={`${jetbrainsMono.className} antialiased relative min-h-screen`}>
         <LenisProvider>
-          <div className="fixed inset-0 z-0 bg-background"></div>
+          <AnimatedBackground />
+          <div className="fixed inset-0 z-0 bg-background/80"></div>
 
           {/* Global Theme Toggle */}
           <div className="fixed top-4 right-4 z-50 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]">

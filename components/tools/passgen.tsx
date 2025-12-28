@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Copy, ArrowsClockwise, Check } from "@phosphor-icons/react";
+import { triggerSparkle } from "@/lib/confetti";
 
 interface Options {
     length: number;
@@ -52,6 +53,7 @@ export function PassGen() {
         try {
             await navigator.clipboard.writeText(password);
             setCopied(true);
+            triggerSparkle();
             setTimeout(() => setCopied(false), 2000);
         } catch {
             // Silent fail
