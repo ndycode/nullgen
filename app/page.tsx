@@ -71,6 +71,8 @@ import { Base64Tool } from "@/components/tools/base64-tool";
 import { RegexTester } from "@/components/tools/regex-tester";
 import { TimestampTool } from "@/components/tools/timestamp-tool";
 import { GradientGen } from "@/components/tools/gradient-gen";
+import { GradientText } from "@/components/ui/gradient-text";
+import { FloatingParticles } from "@/components/floating-particles";
 
 const transition = {
     type: "spring" as const,
@@ -219,7 +221,7 @@ export default function HomePage() {
                     {/* Brand - will morph to header */}
                     <motion.div
                         layoutId="page-header"
-                        className="space-y-2"
+                        className="space-y-3"
                         transition={transition}
                     >
                         <motion.h1
@@ -238,7 +240,7 @@ export default function HomePage() {
                         </motion.p>
                     </motion.div>
 
-                    {/* Enter Button */}
+                    {/* Enter Button - Premium hover effect */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -247,7 +249,7 @@ export default function HomePage() {
                     >
                         <Button
                             size="lg"
-                            className="w-full text-base py-6 rounded-xl"
+                            className="w-full text-base py-6 rounded-xl hover-lift hover-glow"
                             onClick={() => setShowTools(true)}
                         >
                             enter

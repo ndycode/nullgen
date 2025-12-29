@@ -1,41 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
-import { FileMetadata } from "@/lib/file-store";
+import { logger } from "@/lib/logger";
+import { ValidationError, StorageError, formatErrorResponse } from "@/lib/errors";
+import { MAX_UPLOAD_SIZE, CODE_LENGTH, DEFAULT_EXPIRY_MINUTES, DEFAULT_MAX_DOWNLOADS } from "@/lib/constants";
+import type { FileMetadata } from "@/types";
 
 // Generate a 6-digit code
 function generateCode(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    const min = Math.pow(10, CODE_LENGTH - 1);
+    const max = Math.pow(10, CODE_LENGTH) - 1;
+    return Math.floor(min + Math.random() * (max - min + 1)).toString();
 }
 
-// Hash password
+// Hash password using SHA-256
 function hashPassword(password: string): string {
     return crypto.createHash("sha256").update(password).digest("hex");
 }
 
+// Sanitize filename to prevent path traversal
+function sanitizeFilename(filename: string): string {
+    return filename
+        .replace(/[/\\]/g, "_") // Replace slashes
+        .replace(/\.\./g, "_") // Prevent path traversal
+        .replace(/[<>:"|?*]/g, "_") // Remove invalid chars
+        .slice(0, 255); // Limit length
+}
+
 export async function POST(request: NextRequest) {
+    const requestId = crypto.randomUUID().slice(0, 8);
+
     try {
         const formData = await request.formData();
         const files = formData.getAll("files") as File[];
-        const expiryMinutes = parseInt(formData.get("expiryMinutes") as string) || 60;
-        const maxDownloads = parseInt(formData.get("maxDownloads") as string) || 1;
+        const expiryMinutes = parseInt(formData.get("expiryMinutes") as string) || DEFAULT_EXPIRY_MINUTES;
+        const maxDownloads = parseInt(formData.get("maxDownloads") as string) || DEFAULT_MAX_DOWNLOADS;
         const password = formData.get("password") as string | null;
 
+        // Validation
         if (files.length === 0) {
-            return NextResponse.json({ error: "No files provided" }, { status: 400 });
+            throw new ValidationError("No files provided", "files");
         }
 
-        // Check total file size (1 GB limit)
-        const MAX_SIZE = 1024 * 1024 * 1024;
         const totalSize = files.reduce((acc, f) => acc + f.size, 0);
-        if (totalSize > MAX_SIZE) {
-            return NextResponse.json({ error: "Total file size exceeds 1 GB limit" }, { status: 400 });
+        if (totalSize > MAX_UPLOAD_SIZE) {
+            throw new ValidationError(
+                `Total file size exceeds ${Math.round(MAX_UPLOAD_SIZE / 1024 / 1024)} MB limit`,
+                "files"
+            );
         }
 
-        // Generate unique code (retry if metadata exists - simplistic check)
-        let code = generateCode();
-        // In production, we assume low collision probability or handle overwrite.
-        // Ideally check if metadata exists, but R2 consistency is strong enough for this toy app.
+        // Check storage availability
+        if (!r2Storage.isConfigured()) {
+            throw new StorageError("Storage not configured");
+        }
+
+        // Generate unique code
+        const code = generateCode();
 
         // Determine file name and prepare buffer
         let fileName: string;
@@ -44,7 +65,7 @@ export async function POST(request: NextRequest) {
 
         if (files.length === 1) {
             const file = files[0];
-            fileName = file.name;
+            fileName = sanitizeFilename(file.name);
             mimeType = file.type || "application/octet-stream";
             buffer = Buffer.from(await file.arrayBuffer());
         } else {
@@ -57,60 +78,55 @@ export async function POST(request: NextRequest) {
         // Calculate expiry
         const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-        let storageType: "local" | "r2" = "r2"; // Enforce R2 for production
-        let storedFilename: string = "";
-
-        if (r2Storage.isConfigured()) {
-            try {
-                console.log("Attempting R2 upload...");
-                // Use code + random + filename to avoid collisions
-                const randomSuffix = crypto.randomBytes(4).toString("hex");
-                const key = `${code}-${randomSuffix}-${fileName}`;
-
-                // 1. Upload Content
-                await r2Storage.uploadFile(buffer, key, mimeType);
-                storedFilename = key;
-
-                console.log(`File uploaded to R2: ${key}`);
-
-                // 2. Upload Metadata
-                const metadata: FileMetadata = {
-                    storageType: "r2",
-                    filename: key,
-                    originalName: fileName,
-                    size: totalSize,
-                    mimeType,
-                    expiresAt,
-                    maxDownloads: maxDownloads === -1 ? Infinity : maxDownloads,
-                    downloadCount: 0,
-                    password: password ? hashPassword(password) : null,
-                    downloaded: false,
-                };
-
-                await r2Storage.saveMetadata(code, metadata);
-                console.log(`Metadata saved to R2: ${code}.metadata.json`);
-
-            } catch (error) {
-                console.error("R2 upload failed:", error);
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                return NextResponse.json({
-                    error: `Storage upload failed: ${errorMessage}`
-                }, { status: 500 });
-            }
-        } else {
-            return NextResponse.json({
-                error: "Storage not configured. Please contact admin."
-            }, { status: 500 });
-        }
-
-        return NextResponse.json({
-            code,
-            expiresAt: expiresAt.toISOString(),
-            storageType,
+        logger.info("Starting file upload", {
+            requestId,
+            fileCount: files.length,
+            totalSize,
+            expiryMinutes,
         });
+
+        try {
+            // Use code + random + filename to avoid collisions
+            const randomSuffix = crypto.randomBytes(4).toString("hex");
+            const key = `${code}-${randomSuffix}-${fileName}`;
+
+            // 1. Upload Content
+            await r2Storage.uploadFile(buffer, key, mimeType);
+
+            logger.debug("File uploaded to R2", { requestId, key });
+
+            // 2. Upload Metadata
+            const metadata: FileMetadata = {
+                storageType: "r2",
+                filename: key,
+                originalName: fileName,
+                size: totalSize,
+                mimeType,
+                expiresAt,
+                maxDownloads: maxDownloads === -1 ? Infinity : maxDownloads,
+                downloadCount: 0,
+                password: password ? hashPassword(password) : null,
+                downloaded: false,
+            };
+
+            await r2Storage.saveMetadata(code, metadata);
+
+            logger.info("Upload complete", { requestId, code });
+
+            return NextResponse.json({
+                code,
+                expiresAt: expiresAt.toISOString(),
+                storageType: "r2",
+            });
+        } catch (error) {
+            logger.exception("R2 upload failed", error, { requestId });
+            throw new StorageError(
+                error instanceof Error ? error.message : "Upload failed"
+            );
+        }
     } catch (error) {
-        console.error("Upload error:", error);
-        const errorMessage = error instanceof Error ? error.message : "Upload failed";
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        logger.exception("Upload error", error, { requestId });
+        const { error: errorMessage, statusCode } = formatErrorResponse(error);
+        return NextResponse.json({ error: errorMessage }, { status: statusCode });
     }
 }

@@ -43,7 +43,7 @@ cd vxid.cc
 npm install
 
 # Configure environment (optional, for file sharing)
-cp env.example.txt .env.local
+cp .env.example .env.local
 # Edit .env.local with your R2 credentials
 
 # Start development server
@@ -87,7 +87,11 @@ R2_PUBLIC_URL=your_public_url
 | `npm run dev` | Start development server |
 | `npm run build` | Create production build |
 | `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format code with Prettier |
 | `npm test` | Run test suite |
+| `npm run test:coverage` | Run tests with coverage |
+| `npm run typecheck` | Check TypeScript types |
 
 ## Tools (64)
 

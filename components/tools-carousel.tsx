@@ -93,13 +93,15 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative transform-gpu overflow-visible">
-            {/* Back button */}
-            <button
-                onClick={onBack}
-                className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 rounded-lg hover:bg-muted transition-colors"
-            >
-                <ArrowLeft className="w-5 h-5" />
-            </button>
+            {/* Back button - matches theme toggle positioning in layout.tsx */}
+            <div className="fixed top-4 left-4 z-50 pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)]">
+                <button
+                    onClick={onBack}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                </button>
+            </div>
 
             {/* Header - morphs from home page, then instant updates */}
             <motion.div
@@ -160,9 +162,26 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                 </button>
             </div>
 
-            {/* Navigation hint */}
+            {/* Navigation hint with keyboard shortcuts */}
             <div className="flex flex-col items-center gap-2 mt-4 sm:mt-6">
                 <p className="text-[10px] text-muted-foreground/40">use dropdown below</p>
+                {/* Desktop keyboard hints */}
+                <div className="hidden sm:flex items-center gap-3 text-[9px] text-muted-foreground/30">
+                    <span className="flex items-center gap-1">
+                        <kbd className="kbd">←</kbd>
+                        <kbd className="kbd">→</kbd>
+                        <span className="ml-0.5">navigate</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <kbd className="kbd">esc</kbd>
+                        <span className="ml-0.5">back</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <kbd className="kbd">⌘</kbd>
+                        <kbd className="kbd">k</kbd>
+                        <span className="ml-0.5">search</span>
+                    </span>
+                </div>
             </div>
 
             {/* Tool dropdown menu */}

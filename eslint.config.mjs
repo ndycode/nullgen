@@ -13,6 +13,27 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Custom rules for stricter type safety
+  {
+    rules: {
+      // Warn on explicit any usage (aim to remove over time)
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Encourage explicit return types on exported functions
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      // Prevent unused variables
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+      // Prefer const over let when possible
+      "prefer-const": "warn",
+      // No console in production (use logger instead)
+      "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
