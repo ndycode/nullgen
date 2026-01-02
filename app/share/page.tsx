@@ -1,20 +1,16 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import ShareClient from "./share-client";
 
 export default function SharePage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        const code = searchParams.get("code");
-        if (code) {
-            router.replace(`/download?code=${encodeURIComponent(code)}`);
-            return;
-        }
-        router.replace("/");
-    }, [router, searchParams]);
-
-    return null;
+    return (
+        <Suspense
+            fallback={
+                <main className="min-h-screen flex items-center justify-center px-4 py-8">
+                    Redirecting...
+                </main>
+            }
+        >
+            <ShareClient />
+        </Suspense>
+    );
 }
