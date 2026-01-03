@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock server-only module
@@ -100,7 +101,7 @@ describe("File Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await createFileMetadataFromSession(session);
+            const _result = await createFileMetadataFromSession(session);
 
             expect(mockSupabase.from).toHaveBeenCalledWith("file_metadata");
             expect(mockSupabase.insert).toHaveBeenCalledWith(expect.objectContaining({
@@ -157,7 +158,7 @@ describe("File Database Operations", () => {
 
             mockSupabase.maybeSingle.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await getFileByCode("12345678");
+            const _result = await getFileByCode("12345678");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("file_metadata");
             expect(mockSupabase.eq).toHaveBeenCalledWith("code", "12345678");
@@ -198,7 +199,7 @@ describe("File Database Operations", () => {
 
             mockSupabase.maybeSingle.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await getFileById(uuid);
+            const _result = await getFileById(uuid);
 
             expect(mockSupabase.eq).toHaveBeenCalledWith("id", uuid);
         });
@@ -238,7 +239,7 @@ describe("File Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await updateFileDownloadCount(uuid, 1, 2);
+            const _result = await updateFileDownloadCount(uuid, 1, 2);
 
             // Should use eq for both id and expected count
             expect(mockSupabase.eq).toHaveBeenCalledWith("id", uuid);

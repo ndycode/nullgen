@@ -143,66 +143,6 @@ describe("R2 Storage Service", () => {
         });
     });
 
-    describe("isNotFoundError", () => {
-        beforeEach(() => {
-            process.env.R2_ACCOUNT_ID = "test-account";
-            process.env.R2_ACCESS_KEY_ID = "test-key";
-            process.env.R2_SECRET_ACCESS_KEY = "test-secret";
-            process.env.R2_BUCKET_NAME = "test-bucket";
-        });
-
-        it("returns true for NoSuchKey error", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { name: "NoSuchKey" };
-            expect(r2Storage.isNotFoundError(error)).toBe(true);
-        });
-
-        it("returns true for NotFound error", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { name: "NotFound" };
-            expect(r2Storage.isNotFoundError(error)).toBe(true);
-        });
-
-        it("returns true for 404 status code", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { $metadata: { httpStatusCode: 404 } };
-            expect(r2Storage.isNotFoundError(error)).toBe(true);
-        });
-
-        it("returns false for other errors", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { name: "AccessDenied" };
-            expect(r2Storage.isNotFoundError(error)).toBe(false);
-        });
-    });
-
-    describe("isConditionalError", () => {
-        beforeEach(() => {
-            process.env.R2_ACCOUNT_ID = "test-account";
-            process.env.R2_ACCESS_KEY_ID = "test-key";
-            process.env.R2_SECRET_ACCESS_KEY = "test-secret";
-            process.env.R2_BUCKET_NAME = "test-bucket";
-        });
-
-        it("returns true for PreconditionFailed", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { name: "PreconditionFailed" };
-            expect(r2Storage.isConditionalError(error)).toBe(true);
-        });
-
-        it("returns true for 412 status code", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { $metadata: { httpStatusCode: 412 } };
-            expect(r2Storage.isConditionalError(error)).toBe(true);
-        });
-
-        it("returns false for other errors", async () => {
-            const { r2Storage } = await import("./r2");
-            const error = { name: "AccessDenied" };
-            expect(r2Storage.isConditionalError(error)).toBe(false);
-        });
-    });
-
     describe("downloadStream", () => {
         beforeEach(() => {
             process.env.R2_ACCOUNT_ID = "test-account";

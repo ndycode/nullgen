@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock server-only module
@@ -126,7 +127,7 @@ describe("Token Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await deleteAndReturnDownloadToken("uuid-token-123");
+            const _result = await deleteAndReturnDownloadToken("uuid-token-123");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("download_tokens");
             expect(mockSupabase.delete).toHaveBeenCalled();
@@ -164,7 +165,7 @@ describe("Token Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await consumeDownloadToken("uuid-token-123");
+            const _result = await consumeDownloadToken("uuid-token-123");
 
             // Should behave same as deleteAndReturnDownloadToken
             expect(mockSupabase.delete).toHaveBeenCalled();
@@ -187,7 +188,7 @@ describe("Token Database Operations", () => {
 
             mockSupabase.maybeSingle.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await getDownloadToken("uuid-token-123");
+            const _result = await getDownloadToken("uuid-token-123");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("download_tokens");
             expect(mockSupabase.select).toHaveBeenCalledWith("*");

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock server-only module
@@ -136,7 +137,7 @@ describe("Session Database Operations", () => {
 
             mockSupabase.maybeSingle.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await getUploadSession("12345678");
+            const _result = await getUploadSession("12345678");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("upload_sessions");
             expect(mockSupabase.eq).toHaveBeenCalledWith("code", "12345678");
@@ -191,7 +192,7 @@ describe("Session Database Operations", () => {
 
             mockSupabase.rpc.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await finalizeUploadAtomic("12345678");
+            const _result = await finalizeUploadAtomic("12345678");
 
             expect(mockSupabase.rpc).toHaveBeenCalledWith("finalize_upload_atomic", {
                 p_code: "12345678",

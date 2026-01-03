@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock server-only module
@@ -81,7 +82,7 @@ describe("Share Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await createShareContent("test content");
+            const _result = await createShareContent("test content");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("share_contents");
             expect(mockSupabase.insert).toHaveBeenCalledWith({ content: "test content" });
@@ -157,7 +158,7 @@ describe("Share Database Operations", () => {
                 burned: false,
             };
 
-            const result = await createShareRecord(input);
+            const _result = await createShareRecord(input);
 
             expect(mockSupabase.from).toHaveBeenCalledWith("shares");
             expect(mockSupabase.insert).toHaveBeenCalledWith(expect.objectContaining({
@@ -221,7 +222,7 @@ describe("Share Database Operations", () => {
 
             mockSupabase.maybeSingle.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await getShareWithContentByCode("abc12345");
+            const _result = await getShareWithContentByCode("abc12345");
 
             expect(mockSupabase.from).toHaveBeenCalledWith("shares");
             expect(mockSupabase.select).toHaveBeenCalledWith("*, content:share_contents(*)");
@@ -264,7 +265,7 @@ describe("Share Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await updateShareViewCount(uuid, 1, false);
+            const _result = await updateShareViewCount(uuid, 1, false);
 
             expect(mockSupabase.eq).toHaveBeenCalledWith("id", uuid);
             expect(mockSupabase.eq).toHaveBeenCalledWith("view_count", 1);
@@ -294,7 +295,7 @@ describe("Share Database Operations", () => {
 
             mockSupabase.select.mockImplementationOnce(() => Promise.resolve(mockData));
 
-            const result = await updateShareViewCount(uuid, 0, true);
+            const _result = await updateShareViewCount(uuid, 0, true);
 
             expect(mockSupabase.update).toHaveBeenCalledWith(expect.objectContaining({
                 view_count: 1,
@@ -336,7 +337,7 @@ describe("Share Database Operations", () => {
                 expires_at: new Date().toISOString(),
             };
 
-            const result = await createShareAtomic(params);
+            const _result = await createShareAtomic(params);
 
             expect(mockSupabase.rpc).toHaveBeenCalledWith("create_share_atomic", expect.objectContaining({
                 p_content: "test content",

@@ -118,29 +118,29 @@ describe("Database Client Utilities", () => {
 
     describe("isDuplicateError", () => {
         it("returns true for PostgreSQL 23505 error code", () => {
-            const error = { code: "23505", message: "duplicate key", details: null, hint: null };
+            const error = { name: "PostgrestError", code: "23505", message: "duplicate key", details: "", hint: "" } as const;
             expect(isDuplicateError(error)).toBe(true);
         });
 
         it("returns false for other error codes", () => {
-            const error = { code: "42P01", message: "table not found", details: null, hint: null };
+            const error = { name: "PostgrestError", code: "42P01", message: "table not found", details: "", hint: "" } as const;
             expect(isDuplicateError(error)).toBe(false);
         });
 
         it("returns false for null code", () => {
-            const error = { code: null as unknown as string, message: "error", details: null, hint: null };
+            const error = { name: "PostgrestError", code: null as unknown as string, message: "error", details: "", hint: "" };
             expect(isDuplicateError(error)).toBe(false);
         });
     });
 
     describe("handleDbError", () => {
         it("throws StorageError with message", () => {
-            const error = { code: "42P01", message: "table not found", details: "details", hint: "hint" };
+            const error = { name: "PostgrestError", code: "42P01", message: "table not found", details: "details", hint: "hint" };
             expect(() => handleDbError(error, "Custom error message")).toThrow(StorageError);
         });
 
         it("includes custom message in thrown error", () => {
-            const error = { code: "42P01", message: "pg error", details: null, hint: null };
+            const error = { name: "PostgrestError", code: "42P01", message: "pg error", details: "", hint: "" } as const;
             try {
                 handleDbError(error, "Failed to save data");
                 expect.fail("Should have thrown");

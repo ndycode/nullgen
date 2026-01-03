@@ -16,7 +16,7 @@ beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
-    process.env.NODE_ENV = "test";
+    (process.env as Record<string, string>).NODE_ENV = "test";
 });
 
 afterEach(() => {
@@ -43,7 +43,7 @@ function createMockRequest(path: string, ip?: string): NextRequest {
 describe("Middleware Rate Limiting", () => {
     describe("Non-API routes", () => {
         it("bypasses rate limiting for non-API routes", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/", "127.0.0.1");
             const response = await middleware(request);
@@ -52,7 +52,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("bypasses rate limiting for static assets", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/favicon.ico", "127.0.0.1");
             const response = await middleware(request);
@@ -63,7 +63,7 @@ describe("Middleware Rate Limiting", () => {
 
     describe("API route rate limiting", () => {
         it("applies rate limiting to /api/upload", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/upload", "192.168.1.1");
             const response = await middleware(request);
@@ -73,7 +73,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("applies rate limiting to /api/download", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/download/12345678", "192.168.1.1");
             const response = await middleware(request);
@@ -82,7 +82,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("applies rate limiting to /api/share", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/share", "192.168.1.1");
             const response = await middleware(request);
@@ -91,7 +91,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("does not apply rate limiting to other API routes", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/other-endpoint", "192.168.1.1");
             const response = await middleware(request);
@@ -103,7 +103,7 @@ describe("Middleware Rate Limiting", () => {
 
     describe("Rate limit headers", () => {
         it("sets X-RateLimit-Limit header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/upload", "192.168.1.100");
             const response = await middleware(request);
@@ -114,7 +114,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("sets X-RateLimit-Remaining header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/upload", "192.168.1.101");
             const response = await middleware(request);
@@ -124,7 +124,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("sets X-RateLimit-Reset header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/upload", "192.168.1.102");
             const response = await middleware(request);
@@ -137,7 +137,7 @@ describe("Middleware Rate Limiting", () => {
 
     describe("Client IP extraction", () => {
         it("extracts IP from x-forwarded-for header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const url = new URL("http://localhost/api/upload");
             const request = new NextRequest(url, {
@@ -152,7 +152,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("extracts first IP from comma-separated x-forwarded-for", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const url = new URL("http://localhost/api/upload");
             const request = new NextRequest(url, {
@@ -166,7 +166,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("extracts IP from x-real-ip header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const url = new URL("http://localhost/api/upload");
             const request = new NextRequest(url, {
@@ -180,7 +180,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("extracts IP from x-vercel-forwarded-for header", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const url = new URL("http://localhost/api/upload");
             const request = new NextRequest(url, {
@@ -196,7 +196,7 @@ describe("Middleware Rate Limiting", () => {
 
     describe("In-memory rate limiting (development)", () => {
         it("allows requests under limit", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const request = createMockRequest("/api/upload", "10.10.10.1");
             const response = await middleware(request);
@@ -205,7 +205,7 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("decrements remaining count", async () => {
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const ip = "10.10.10.2";
             const response1 = await middleware(createMockRequest("/api/upload", ip));
@@ -220,8 +220,8 @@ describe("Middleware Rate Limiting", () => {
 
     describe("429 response", () => {
         it("returns 429 when limit exceeded", async () => {
-            const { middleware } = await import("../middleware");
-            const { UPLOAD_RATE_LIMIT } = await import("../lib/constants");
+            const { middleware } = await import("./middleware");
+            const { UPLOAD_RATE_LIMIT } = await import("./lib/constants");
 
             const ip = "10.10.10.99";
 
@@ -236,8 +236,8 @@ describe("Middleware Rate Limiting", () => {
         });
 
         it("includes Retry-After header on 429", async () => {
-            const { middleware } = await import("../middleware");
-            const { UPLOAD_RATE_LIMIT } = await import("../lib/constants");
+            const { middleware } = await import("./middleware");
+            const { UPLOAD_RATE_LIMIT } = await import("./lib/constants");
 
             const ip = "10.10.10.98";
 
@@ -259,11 +259,11 @@ describe("Middleware Rate Limiting", () => {
 
     describe("Upstash configuration", () => {
         it("returns 503 in production without Upstash", async () => {
-            process.env.NODE_ENV = "production";
+            (process.env as Record<string, string>).NODE_ENV = "production";
             delete process.env.UPSTASH_REDIS_REST_URL;
             delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
-            const { middleware } = await import("../middleware");
+            const { middleware } = await import("./middleware");
 
             const url = new URL("http://localhost/api/upload");
             const request = new NextRequest(url, {
@@ -277,8 +277,8 @@ describe("Middleware Rate Limiting", () => {
 
     describe("Different path limits", () => {
         it("uses different limits for upload vs download", async () => {
-            const { UPLOAD_RATE_LIMIT, DOWNLOAD_RATE_LIMIT } = await import("../lib/constants");
-            const { middleware } = await import("../middleware");
+            const { UPLOAD_RATE_LIMIT, DOWNLOAD_RATE_LIMIT } = await import("./lib/constants");
+            const { middleware } = await import("./middleware");
 
             const uploadRequest = createMockRequest("/api/upload", "192.168.50.1");
             const uploadResponse = await middleware(uploadRequest);
