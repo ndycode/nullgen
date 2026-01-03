@@ -38,7 +38,7 @@ vi.mock("sonner", () => ({
     },
 }));
 
-import ShareViewerPage from "./page";
+import { ShareViewerClient } from "./share-viewer-client";
 
 describe("ShareViewerPage Component", () => {
     beforeEach(() => {
@@ -52,7 +52,7 @@ describe("ShareViewerPage Component", () => {
         it("shows loading state initially", async () => {
             mockFetch.mockImplementation(() => new Promise(() => { })); // Never resolves
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             // Should show loading indicator
             expect(screen.getByText(/loading/i) || screen.getByRole("progressbar")).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText("Hello, world!")).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/example.com/i)).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/console.log/)).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/key/)).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/a/)).toBeInTheDocument();
@@ -177,7 +177,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByRole("img")).toBeInTheDocument();
@@ -195,7 +195,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
@@ -222,7 +222,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
             const user = userEvent.setup();
 
             await waitFor(() => {
@@ -249,7 +249,7 @@ describe("ShareViewerPage Component", () => {
                 json: async () => ({ error: "Incorrect password" }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
             const user = userEvent.setup();
 
             await waitFor(() => {
@@ -279,7 +279,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/destroy|burn|once/i)).toBeInTheDocument();
@@ -295,7 +295,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/destroyed|burned|no longer/i)).toBeInTheDocument();
@@ -311,7 +311,7 @@ describe("ShareViewerPage Component", () => {
                 json: async () => ({ error: "Share not found" }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/not found|doesn't exist/i)).toBeInTheDocument();
@@ -325,7 +325,7 @@ describe("ShareViewerPage Component", () => {
                 json: async () => ({ error: "Share has expired" }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByText(/expired|no longer/i)).toBeInTheDocument();
@@ -347,7 +347,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 expect(screen.getByRole("button", { name: /copy/i })).toBeInTheDocument();
@@ -371,7 +371,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 const downloadButton = screen.queryByRole("button", { name: /download/i });
@@ -397,7 +397,7 @@ describe("ShareViewerPage Component", () => {
                 }),
             });
 
-            render(<ShareViewerPage />);
+            render(<ShareViewerClient code="abc12345" />);
 
             await waitFor(() => {
                 // Should render without crashing
