@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Input } from "@/components/ui/input";
 import { AlertBanner } from "@/components/ui/alert-banner";
-import { DecorativeBackground } from "@/components/decorative-background";
+
 import {
     ArrowLeft,
     Download,
@@ -35,13 +35,16 @@ interface FileInfo {
 // Map backend error messages to user-friendly copy
 function mapErrorToUserMessage(error: string): string {
     const errorMap: Record<string, string> = {
-        "File not found or expired": "We couldn't find that file. It may have expired or the code is incorrect.",
+        "File not found or expired":
+            "We couldn't find that file. It may have expired or the code is incorrect.",
         "File has expired": "This file has expired and is no longer available.",
-        "Download limit reached": "This file has already been downloaded and is no longer available.",
+        "Download limit reached":
+            "This file has already been downloaded and is no longer available.",
         "Password required": "This file requires a password to download.",
         "Incorrect password": "The password you entered is incorrect.",
         "Download failed": "The download failed. Please try again.",
-        "Downloads are temporarily disabled": "Downloads are temporarily unavailable. Please try again later.",
+        "Downloads are temporarily disabled":
+            "Downloads are temporarily unavailable. Please try again later.",
     };
     // Return mapped message or a generic fallback for unknown errors
     return errorMap[error] || "Something went wrong. Please try again.";
@@ -141,9 +144,7 @@ export default function DownloadClient() {
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            <DecorativeBackground />
-
+        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
             <div className="relative z-10 w-full max-w-sm">
                 {/* Header */}
                 <div className="mb-8">
@@ -178,14 +179,20 @@ export default function DownloadClient() {
                                     <CheckCircle weight="fill" className="w-10 h-10 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-semibold mb-2">Download Complete!</h3>
+                                    <h3 className="text-xl font-semibold mb-2">
+                                        Download Complete!
+                                    </h3>
                                     <p className="text-muted-foreground">
                                         Your file has been downloaded successfully
                                     </p>
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <Button variant="outline" onClick={resetDownload} className="flex-1">
+                                    <Button
+                                        variant="outline"
+                                        onClick={resetDownload}
+                                        className="flex-1"
+                                    >
                                         Download Another
                                     </Button>
                                     <Link href="/" className="flex-1">
@@ -200,16 +207,22 @@ export default function DownloadClient() {
                                     This file has been deleted from our servers
                                 </p>
                             </div>
-                        ) : (downloadState === "ready" || downloadState === "downloading") && fileInfo ? (
+                        ) : (downloadState === "ready" || downloadState === "downloading") &&
+                          fileInfo ? (
                             /* Ready to Download State */
                             <div className="space-y-6">
                                 <div className="bg-muted rounded-2xl p-6 space-y-4">
                                     <div className="flex items-start gap-4">
                                         <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <File weight="duotone" className="w-7 h-7 text-primary" />
+                                            <File
+                                                weight="duotone"
+                                                className="w-7 h-7 text-primary"
+                                            />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold truncate">{fileInfo.name}</p>
+                                            <p className="font-semibold truncate">
+                                                {fileInfo.name}
+                                            </p>
                                             <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                                                 <span className="flex items-center gap-1">
                                                     <HardDrive weight="bold" className="w-4 h-4" />
@@ -217,7 +230,8 @@ export default function DownloadClient() {
                                                 </span>
                                                 <span className="flex items-center gap-1">
                                                     <Timer weight="bold" className="w-4 h-4" />
-                                                    Expires in {formatTimeRemaining(fileInfo.expiresAt)}
+                                                    Expires in{" "}
+                                                    {formatTimeRemaining(fileInfo.expiresAt)}
                                                 </span>
                                             </div>
                                         </div>
@@ -241,12 +255,17 @@ export default function DownloadClient() {
 
                                 <Button
                                     onClick={downloadFile}
-                                    disabled={downloadState === "downloading" || (fileInfo.requiresPassword && !password)}
+                                    disabled={
+                                        downloadState === "downloading" ||
+                                        (fileInfo.requiresPassword && !password)
+                                    }
                                     size="lg"
                                     className="w-full gap-2"
                                 >
                                     <Download weight="bold" className="w-5 h-5" />
-                                    {downloadState === "downloading" ? "Downloading..." : "Download File"}
+                                    {downloadState === "downloading"
+                                        ? "Downloading..."
+                                        : "Download File"}
                                 </Button>
 
                                 <Button variant="ghost" onClick={resetDownload} className="w-full">
@@ -270,7 +289,11 @@ export default function DownloadClient() {
                                     >
                                         <InputOTPGroup>
                                             {Array.from({ length: CODE_LENGTH }, (_, i) => (
-                                                <InputOTPSlot key={i} index={i} className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl" />
+                                                <InputOTPSlot
+                                                    key={i}
+                                                    index={i}
+                                                    className="w-11 h-14 sm:w-14 sm:h-16 text-xl sm:text-2xl"
+                                                />
                                             ))}
                                         </InputOTPGroup>
                                     </InputOTP>
@@ -286,7 +309,9 @@ export default function DownloadClient() {
                                 {/* Check Code Button */}
                                 <Button
                                     onClick={() => checkCode()}
-                                    disabled={code.length !== CODE_LENGTH || downloadState === "loading"}
+                                    disabled={
+                                        code.length !== CODE_LENGTH || downloadState === "loading"
+                                    }
                                     size="lg"
                                     className="w-full gap-2"
                                 >

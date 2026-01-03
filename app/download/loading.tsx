@@ -1,11 +1,8 @@
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { DecorativeBackground } from "@/components/decorative-background";
 
 export default function DownloadLoading() {
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            <DecorativeBackground />
-
+        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
             <div className="relative z-10 w-full max-w-sm">
                 {/* Skeleton Header */}
                 <div className="mb-8">

@@ -13,7 +13,9 @@
     "core/process/documentation-integrity.txt",
     "web/frontend/nextjs/render-performance.txt",
     "web/interface/accessibility-core.txt",
-    "web/interface/component-architecture.txt"
+    "web/interface/component-architecture.txt",
+    "web/interface/design-system.txt",
+    "web/interface/quality-standards.txt"
   ],
   "versions": {
     "core/security/api-ergonomics.txt": "1.4.3",
@@ -29,6 +31,8 @@
     "core/process/documentation-integrity.txt": "1.4.3",
     "web/frontend/nextjs/render-performance.txt": "1.4.3",
     "web/interface/accessibility-core.txt": "1.4.3",
-    "web/interface/component-architecture.txt": "1.4.3"
+    "web/interface/component-architecture.txt": "1.4.3",
+    "web/interface/design-system.txt": "1.4.3",
+    "web/interface/quality-standards.txt": "1.4.3"
   }
 }
