@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
 import { StorageError, ValidationError, formatErrorResponse } from "@/lib/errors";
-import { consumeDownloadToken, deleteFileById, getFileById, type FileRecord } from "@/lib/db";
+import { consumeDownloadToken, deleteFileById, getFileById, getDownloadToken, type FileRecord } from "@/lib/db";
 import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
@@ -70,7 +70,8 @@ export async function GET(
             throw new StorageError("Storage not configured");
         }
 
-        const tokenRecord = await withTiming(timings, "db", () => consumeDownloadToken(token));
+        // First, validate token without consuming it
+        const tokenRecord = await withTiming(timings, "db", () => getDownloadToken(token));
         if (!tokenRecord || tokenRecord.code !== code) {
             return jsonResponse({ error: "Invalid or expired token" }, { status: 404 }, timings);
         }
@@ -78,6 +79,9 @@ export async function GET(
         if (new Date(tokenRecord.expires_at) < new Date()) {
             return jsonResponse({ error: "Download token expired" }, { status: 410 }, timings);
         }
+
+        // Only consume (delete) token after validation passes
+        await withTiming(timings, "db", () => consumeDownloadToken(token));
 
         const record = await withTiming(timings, "db", () => getFileById(tokenRecord.file_id));
         if (!record) {
@@ -110,6 +114,8 @@ export async function GET(
                 "Content-Type": record.mime_type || "application/octet-stream",
                 "Content-Disposition": `attachment; filename="${encodeURIComponent(record.original_name)}"`,
                 "Content-Length": record.size.toString(),
+                // Security: Prevent MIME sniffing attacks
+                "X-Content-Type-Options": "nosniff",
             },
         });
     } catch (error) {
