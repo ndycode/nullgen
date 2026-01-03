@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 
@@ -16,7 +16,26 @@ const EMOJI_DATA = {
     "Flags": ["🏳️", "🏴", "🏁", "🚩", "🏳️‍🌈", "🏳️‍⚧️", "🇺🇸", "🇬🇧", "🇨🇦", "🇦🇺", "🇯🇵", "🇰🇷", "🇨🇳", "🇮🇳", "🇧🇷", "🇫🇷", "🇩🇪", "🇮🇹", "🇪🇸", "🇲🇽", "🇵🇭", "🇹🇭", "🇻🇳", "🇮🇩", "🇸🇬", "🇲🇾", "🇳🇬", "🇿🇦", "🇪🇬", "🇦🇪", "🇸🇦", "🇹🇷", "🇷🇺", "🇺🇦", "🇵🇱", "🇳🇱", "🇧🇪", "🇨🇭", "🇦🇹", "🇸🇪", "🇳🇴", "🇩🇰", "🇫🇮", "🇮🇪", "🇵🇹", "🇬🇷", "🇦🇷", "🇨🇱", "🇨🇴", "🇵🇪"],
 };
 
-const CATEGORIES = Object.keys(EMOJI_DATA);
+const CATEGORIES = Object.keys(EMOJI_DATA) as (keyof typeof EMOJI_DATA)[];
+const ALL_EMOJIS = Object.values(EMOJI_DATA).flat();
+
+// Memoized emoji button to prevent re-renders
+interface EmojiButtonProps {
+    emoji: string;
+    isCopied: boolean;
+    onCopy: (emoji: string) => void;
+}
+
+const EmojiButton = memo(function EmojiButton({ emoji, isCopied, onCopy }: EmojiButtonProps) {
+    return (
+        <button
+            onClick={() => onCopy(emoji)}
+            className={`w-10 h-10 text-2xl hover:bg-muted rounded-xl transition-colors flex items-center justify-center active:scale-90 ${isCopied ? "bg-primary/20" : ""}`}
+        >
+            {emoji}
+        </button>
+    );
+});
 
 export function EmojiPicker() {
     const [category, setCategory] = useState<keyof typeof EMOJI_DATA>("Smileys");
@@ -24,20 +43,20 @@ export function EmojiPicker() {
     const [copied, setCopied] = useState<string | null>(null);
     const [recent, setRecent] = useState<string[]>([]);
 
-    // Filter emojis by search
-    const allEmojis = Object.values(EMOJI_DATA).flat();
-    const filteredEmojis = search
-        ? allEmojis.filter(e => e.includes(search))
-        : EMOJI_DATA[category];
+    // Memoized filtered emojis
+    const filteredEmojis = useMemo(() => {
+        if (!search) return EMOJI_DATA[category];
+        const searchLower = search.toLowerCase();
+        return ALL_EMOJIS.filter(e => e.includes(searchLower));
+    }, [search, category]);
 
-    const copyEmoji = async (emoji: string) => {
+    // Memoized copy handler
+    const copyEmoji = useCallback(async (emoji: string) => {
         await navigator.clipboard.writeText(emoji);
         setCopied(emoji);
         setTimeout(() => setCopied(null), 1000);
-
-        // Add to recent
         setRecent(prev => [emoji, ...prev.filter(e => e !== emoji)].slice(0, 12));
-    };
+    }, []);
 
     return (
         <div className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4">
@@ -85,7 +104,7 @@ export function EmojiPicker() {
                     {CATEGORIES.map((cat) => (
                         <button
                             key={cat}
-                            onClick={() => setCategory(cat as keyof typeof EMOJI_DATA)}
+                            onClick={() => setCategory(cat)}
                             className={`px-3 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors ${category === cat
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted text-muted-foreground"
@@ -97,19 +116,16 @@ export function EmojiPicker() {
                 </div>
             )}
 
-            {/* Emoji grid - Apple style */}
+            {/* Emoji grid - optimized with memoized buttons */}
             <div className="h-[180px] overflow-y-auto">
                 <div className="grid grid-cols-7 gap-1">
                     {filteredEmojis.map((emoji, i) => (
-                        <motion.button
-                            key={i}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => copyEmoji(emoji)}
-                            className={`w-10 h-10 text-2xl hover:bg-muted rounded-xl transition-colors flex items-center justify-center ${copied === emoji ? "bg-primary/20" : ""
-                                }`}
-                        >
-                            {emoji}
-                        </motion.button>
+                        <EmojiButton
+                            key={`${emoji}-${i}`}
+                            emoji={emoji}
+                            isCopied={copied === emoji}
+                            onCopy={copyEmoji}
+                        />
                     ))}
                 </div>
             </div>

@@ -32,47 +32,39 @@ export function useToolPreferences(): ToolPreferences {
         }
     };
 
-    // Load from localStorage on mount
+    // Load from localStorage on mount - setState calls are valid for initialization
     useEffect(() => {
-        setMounted(true);
+        setMounted(true); // eslint-disable-line
         try {
             const storedFavorites = localStorage.getItem(FAVORITES_KEY);
             const storedRecent = localStorage.getItem(RECENT_KEY);
 
-            const favorites = parseStringArray(storedFavorites);
-            if (favorites) {
-                setFavorites(favorites);
+            const favoritesData = parseStringArray(storedFavorites);
+            if (favoritesData) {
+                setFavorites(favoritesData); // eslint-disable-line
             }
-            const recent = parseStringArray(storedRecent);
-            if (recent) {
-                setRecent(recent);
+            const recentData = parseStringArray(storedRecent);
+            if (recentData) {
+                setRecent(recentData); // eslint-disable-line
             }
         } catch (e) {
             console.error("Failed to load tool preferences:", e);
         }
     }, []);
 
-    // Save favorites to localStorage
+    // Save preferences to localStorage (debounced to reduce writes)
     useEffect(() => {
-        if (mounted) {
+        if (!mounted) return;
+        const timeout = setTimeout(() => {
             try {
                 localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-            } catch (e) {
-                console.error("Failed to save favorites:", e);
-            }
-        }
-    }, [favorites, mounted]);
-
-    // Save recent to localStorage
-    useEffect(() => {
-        if (mounted) {
-            try {
                 localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
             } catch (e) {
-                console.error("Failed to save recent:", e);
+                console.error("Failed to save preferences:", e);
             }
-        }
-    }, [recent, mounted]);
+        }, 100);
+        return () => clearTimeout(timeout);
+    }, [favorites, recent, mounted]);
 
     const isFavorite = useCallback((toolId: string) => {
         return favorites.includes(toolId);

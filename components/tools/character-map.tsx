@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Copy, Check } from "@phosphor-icons/react";
+import { useState, useMemo, useCallback, memo } from "react";
 
 type Category = "symbols" | "arrows" | "math" | "currency" | "punctuation" | "emoji";
 
@@ -33,35 +31,53 @@ const CHAR_CATEGORIES: Record<Category, { label: string; chars: string[] }> = {
     }
 };
 
+const ALL_CHARS = Object.values(CHAR_CATEGORIES).flatMap(c => c.chars);
+const CATEGORIES = Object.entries(CHAR_CATEGORIES).map(([id, { label }]) => ({
+    id: id as Category,
+    label
+}));
+
+// Memoized character button
+interface CharButtonProps {
+    char: string;
+    isCopied: boolean;
+    onCopy: (char: string) => void;
+}
+
+const CharButton = memo(function CharButton({ char, isCopied, onCopy }: CharButtonProps) {
+    return (
+        <button
+            onClick={() => onCopy(char)}
+            className={`aspect-square flex items-center justify-center text-base sm:text-lg rounded-lg transition-all min-h-zone-xs min-w-[40px] active:scale-90 ${isCopied
+                ? "bg-primary text-primary-foreground scale-110"
+                : "bg-muted hover:bg-muted/80 hover:scale-105"
+                }`}
+        >
+            {char}
+        </button>
+    );
+});
+
 export function CharacterMap() {
     const [search, setSearch] = useState("");
     const [copied, setCopied] = useState<string | null>(null);
     const [category, setCategory] = useState<Category>("symbols");
 
-    const copyChar = async (char: string) => {
+    // Memoized copy handler
+    const copyChar = useCallback(async (char: string) => {
         await navigator.clipboard.writeText(char);
         setCopied(char);
         setTimeout(() => setCopied(null), 1000);
-    };
+    }, []);
 
+    // Memoized filtered characters
     const filteredChars = useMemo(() => {
         if (!search) return CHAR_CATEGORIES[category].chars;
-        const all = Object.values(CHAR_CATEGORIES).flatMap(c => c.chars);
-        return all.filter(c => c.includes(search));
+        return ALL_CHARS.filter(c => c.includes(search));
     }, [search, category]);
 
-    const categories = Object.entries(CHAR_CATEGORIES).map(([id, { label }]) => ({
-        id: id as Category,
-        label
-    }));
-
     return (
-        <motion.div
-            className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-        >
+        <div className="bg-card border rounded-2xl p-3 sm:p-4 space-y-4">
             {/* Search */}
             <input
                 type="text"
@@ -73,7 +89,7 @@ export function CharacterMap() {
 
             {/* Category tabs */}
             <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-                {categories.map((cat) => (
+                {CATEGORIES.map((cat) => (
                     <button
                         key={cat.id}
                         onClick={() => { setCategory(cat.id); setSearch(""); }}
@@ -87,20 +103,15 @@ export function CharacterMap() {
                 ))}
             </div>
 
-            {/* Character grid */}
+            {/* Character grid - optimized with memoized buttons */}
             <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 max-h-52 overflow-y-auto scrollbar-hide">
                 {filteredChars.map((char, i) => (
-                    <motion.button
+                    <CharButton
                         key={`${char}-${i}`}
-                        onClick={() => copyChar(char)}
-                        className={`aspect-square flex items-center justify-center text-base sm:text-lg rounded-lg transition-all min-h-zone-xs min-w-[40px] ${copied === char
-                            ? "bg-primary text-primary-foreground scale-110"
-                            : "bg-muted hover:bg-muted/80 hover:scale-105"
-                            }`}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        {char}
-                    </motion.button>
+                        char={char}
+                        isCopied={copied === char}
+                        onCopy={copyChar}
+                    />
                 ))}
             </div>
 
@@ -108,6 +119,6 @@ export function CharacterMap() {
             <p className="text-xs text-muted-foreground text-center">
                 {filteredChars.length} characters • tap to copy
             </p>
-        </motion.div>
+        </div>
     );
 }

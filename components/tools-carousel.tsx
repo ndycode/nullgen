@@ -1,11 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CaretLeft, CaretRight, CaretDown, Check, MagnifyingGlass, Heart } from "@phosphor-icons/react";
-import { TOOLS } from "@/lib/tools-config";
+import { TOOLS, Tool } from "@/lib/tools-config";
 import { useToolPreferences } from "@/lib/tool-preferences";
+import type { Icon } from "@phosphor-icons/react";
+
+// Memoized tool button to prevent re-renders
+interface ToolButtonProps {
+    tool: Tool;
+    toolIndex: number;
+    currentIndex: number;
+    onSelect: (index: number) => void;
+    keyPrefix?: string;
+}
+
+const ToolButton = memo(function ToolButton({ tool, toolIndex, currentIndex, onSelect, keyPrefix = '' }: ToolButtonProps) {
+    const Icon = tool.icon;
+    const isActive = toolIndex === currentIndex;
+
+    return (
+        <button
+            onClick={() => onSelect(toolIndex)}
+            className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${isActive
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted text-muted-foreground"
+                }`}
+        >
+            <Icon className="w-3.5 h-3.5" />
+            <span className="truncate">{tool.name}</span>
+        </button>
+    );
+});
+
+// Helper to match tools against search query
+function matchesSearch(tool: Tool, query: string): boolean {
+    if (!query) return true;
+    const lowerQuery = query.toLowerCase();
+    return tool.name.toLowerCase().includes(lowerQuery) || tool.id.toLowerCase().includes(lowerQuery);
+}
 
 interface ToolsCarouselProps {
     children: React.ReactNode[];
@@ -76,6 +111,43 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
     };
 
     const currentTool = TOOLS[currentIndex];
+
+    // Memoized category filters to prevent re-computation on every render
+    const filteredCategories = useMemo(() => {
+        const categories = ['checker', 'sharing', 'generate', 'text', 'image'] as const;
+        return categories.reduce((acc, category) => {
+            acc[category] = TOOLS
+                .map((tool, index) => ({ tool, index }))
+                .filter(({ tool }) => tool.category === category && matchesSearch(tool, searchQuery));
+            return acc;
+        }, {} as Record<string, { tool: Tool; index: number }[]>);
+    }, [searchQuery]);
+
+    // Memoized favorites list with indices
+    const favoriteTools = useMemo(() => {
+        return TOOLS
+            .map((tool, index) => ({ tool, index }))
+            .filter(({ tool }) => favorites.includes(tool.id));
+    }, [favorites]);
+
+    // Memoized recent list with indices
+    const recentTools = useMemo(() => {
+        return recent.slice(0, 6)
+            .map(toolId => {
+                const index = TOOLS.findIndex(t => t.id === toolId);
+                const tool = TOOLS[index];
+                return tool ? { tool, index } : null;
+            })
+            .filter((item): item is { tool: Tool; index: number } => item !== null);
+    }, [recent]);
+
+    // Memoized select handler
+    const handleSelectTool = useCallback((index: number) => {
+        setDirection(index > currentIndex ? 1 : -1);
+        setCurrentIndex(index);
+        setShowMenu(false);
+        setSearchQuery("");
+    }, [currentIndex]);
 
     const variants = {
         enter: {
@@ -223,192 +295,134 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                     <div className="max-h-[300px] overflow-y-auto scrollbar-hide p-2">
                                         <div className="space-y-3">
                                             {/* Favorites Section */}
-                                            {favorites.length > 0 && searchQuery === '' && (
+                                            {favoriteTools.length > 0 && searchQuery === '' && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1 flex items-center gap-1">
                                                         <Heart weight="fill" className="w-2.5 h-2.5 text-primary" /> favorites
                                                     </p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => favorites.includes(t.id)).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={`fav-${tool.id}`}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {favoriteTools.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={`fav-${tool.id}`}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Recent Section */}
-                                            {recent.length > 0 && searchQuery === '' && (
+                                            {recentTools.length > 0 && searchQuery === '' && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">recent</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {recent.slice(0, 6).map((toolId) => {
-                                                            const tool = TOOLS.find(t => t.id === toolId);
-                                                            if (!tool) return null;
-                                                            const index = TOOLS.findIndex(t => t.id === toolId);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={`recent-${tool.id}`}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {recentTools.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={`recent-${tool.id}`}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Divider if we have favorites or recent */}
-                                            {(favorites.length > 0 || recent.length > 0) && searchQuery === '' && (
+                                            {(favoriteTools.length > 0 || recentTools.length > 0) && searchQuery === '' && (
                                                 <div className="border-t" />
                                             )}
 
                                             {/* Checker */}
-                                            {TOOLS.filter(t => t.category === 'checker' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
+                                            {filteredCategories.checker.length > 0 && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">checker</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => t.category === 'checker' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={tool.id}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {filteredCategories.checker.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Sharing */}
-                                            {TOOLS.filter(t => t.category === 'sharing' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
+                                            {filteredCategories.sharing.length > 0 && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">sharing</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => t.category === 'sharing' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={tool.id}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {filteredCategories.sharing.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Generate */}
-                                            {TOOLS.filter(t => t.category === 'generate' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
+                                            {filteredCategories.generate.length > 0 && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">generate</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => t.category === 'generate' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={tool.id}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {filteredCategories.generate.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Text */}
-                                            {TOOLS.filter(t => t.category === 'text' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
+                                            {filteredCategories.text.length > 0 && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">text</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => t.category === 'text' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={tool.id}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {filteredCategories.text.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Image */}
-                                            {TOOLS.filter(t => t.category === 'image' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
+                                            {filteredCategories.image.length > 0 && (
                                                 <div>
                                                     <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">image</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {TOOLS.filter(t => t.category === 'image' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
-                                                            const index = TOOLS.findIndex(t => t.id === tool.id);
-                                                            const Icon = tool.icon;
-                                                            return (
-                                                                <button
-                                                                    key={tool.id}
-                                                                    onClick={() => selectTool(index)}
-                                                                    className={`px-2 py-1.5 text-xs rounded-lg flex items-center gap-2 transition-colors ${index === currentIndex
-                                                                        ? "bg-primary text-primary-foreground"
-                                                                        : "hover:bg-muted text-muted-foreground"
-                                                                        }`}
-                                                                >
-                                                                    <Icon className="w-3.5 h-3.5" />
-                                                                    <span className="truncate">{tool.name}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {filteredCategories.image.map(({ tool, index }) => (
+                                                            <ToolButton
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                toolIndex={index}
+                                                                currentIndex={currentIndex}
+                                                                onSelect={handleSelectTool}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             )}

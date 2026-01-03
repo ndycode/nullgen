@@ -1,6 +1,7 @@
 "use client"
+/* eslint-disable react/no-unstable-nested-components */
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { AnimatePresence, motion, MotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
@@ -43,9 +44,10 @@ export function HyperText({
   characterSet = DEFAULT_CHARACTER_SET,
   ...props
 }: HyperTextProps) {
-  const MotionComponent = motion.create(Component, {
-    forwardMotionProps: true,
-  })
+  const MotionComponent = useMemo(
+    () => motion.create(Component, { forwardMotionProps: true }),
+    [Component]
+  )
 
   const [displayText, setDisplayText] = useState<string[]>(() =>
     children.split("")
@@ -89,29 +91,35 @@ export function HyperText({
     return () => observer.disconnect()
   }, [delay, startOnView])
 
-  // Handle scramble animation
+  // Handle scramble animation - optimized to reduce state updates
   useEffect(() => {
     if (!isAnimating) return
 
     const maxIterations = children.length
     const startTime = performance.now()
     let animationFrameId: number
+    let lastUpdateIndex = -1
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime
       const progress = Math.min(elapsed / duration, 1)
 
       iterationCount.current = progress * maxIterations
+      const currentRevealed = Math.floor(iterationCount.current)
 
-      setDisplayText((currentText) =>
-        currentText.map((letter, index) =>
-          letter === " "
-            ? letter
-            : index <= iterationCount.current
-              ? children[index]
-              : characterSet[getRandomInt(characterSet.length)]
+      // Only update state when a new character is revealed (reduces updates from ~40/sec to ~1 per character)
+      if (currentRevealed > lastUpdateIndex || progress >= 1) {
+        lastUpdateIndex = currentRevealed
+        setDisplayText(
+          children.split("").map((letter, index) =>
+            letter === " "
+              ? letter
+              : index <= currentRevealed
+                ? children[index]
+                : characterSet[getRandomInt(characterSet.length)]
+          )
         )
-      )
+      }
 
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(animate)
