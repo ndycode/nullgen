@@ -69,7 +69,7 @@ export function ErrorState({
 
     if (fullScreen) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 text-center">
+            <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 text-center">
                 {content}
             </div>
         );

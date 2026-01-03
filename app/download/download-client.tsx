@@ -322,6 +322,11 @@ export default function DownloadClient() {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Footer */}
+                <p className="text-center text-xs text-muted-foreground/50 mt-6">
+                    vxid.cc — privacy-first tools
+                </p>
             </div>
         </main>
     );

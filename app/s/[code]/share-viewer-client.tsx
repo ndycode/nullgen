@@ -5,11 +5,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorState } from "@/components/ui/error-state";
 import {
     Lock,
-    Warning,
     Link as LinkIcon,
     FileText,
     Image as ImageIcon,
@@ -19,8 +20,6 @@ import {
     DownloadSimple,
     Eye,
     EyeSlash,
-    ArrowClockwise,
-    House,
 } from "@phosphor-icons/react";
 import { ShareType } from "@/lib/share-types";
 
@@ -77,44 +76,47 @@ export function ShareViewerClient({ code }: ShareViewerClientProps) {
     const [shareType, setShareType] = useState<ShareType | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    const fetchShare = useCallback(async (pwd?: string) => {
-        setLoading(true);
-        setError("");
+    const fetchShare = useCallback(
+        async (pwd?: string) => {
+            setLoading(true);
+            setError("");
 
-        try {
-            const res = await fetch(`/api/share/${code}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password: pwd || undefined }),
-            });
-            const json = await res.json();
+            try {
+                const res = await fetch(`/api/share/${code}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: pwd || undefined }),
+                });
+                const json = await res.json();
 
-            if (res.status === 401 && json.requiresPassword) {
-                setNeedsPassword(true);
-                setShareType(json.type);
+                if (res.status === 401 && json.requiresPassword) {
+                    setNeedsPassword(true);
+                    setShareType(json.type);
+                    setLoading(false);
+                    return;
+                }
+
+                if (!res.ok) {
+                    setError(json.error || "Failed to load share");
+                    setLoading(false);
+                    return;
+                }
+
+                setData(json);
+                setNeedsPassword(false);
+
+                // For links, redirect
+                if (json.type === "link") {
+                    window.location.href = json.content;
+                }
+            } catch {
+                setError("Failed to load share");
+            } finally {
                 setLoading(false);
-                return;
             }
-
-            if (!res.ok) {
-                setError(json.error || "Failed to load share");
-                setLoading(false);
-                return;
-            }
-
-            setData(json);
-            setNeedsPassword(false);
-
-            // For links, redirect
-            if (json.type === "link") {
-                window.location.href = json.content;
-            }
-        } catch {
-            setError("Failed to load share");
-        } finally {
-            setLoading(false);
-        }
-    }, [code]);
+        },
+        [code]
+    );
 
     useEffect(() => {
         fetchShare();
@@ -131,8 +133,8 @@ export function ShareViewerClient({ code }: ShareViewerClientProps) {
     const label = data?.type
         ? TYPE_LABELS[data.type]
         : shareType
-            ? TYPE_LABELS[shareType]
-            : "Share";
+          ? TYPE_LABELS[shareType]
+          : "Share";
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
@@ -163,29 +165,14 @@ export function ShareViewerClient({ code }: ShareViewerClientProps) {
                             <LoadingSpinner size="md" label="Loading share..." />
                         </div>
                     ) : error ? (
-                        <div className="py-8 text-center space-y-4">
-                            <Warning
-                                weight="duotone"
-                                className="w-12 h-12 text-destructive mx-auto"
-                            />
-                            <p className="text-destructive font-medium">{error}</p>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <Button
-                                    onClick={() => fetchShare()}
-                                    variant="outline"
-                                    className="flex-1 gap-2"
-                                >
-                                    <ArrowClockwise weight="bold" className="w-4 h-4" />
-                                    Try again
-                                </Button>
-                                <Link href="/" className="flex-1">
-                                    <Button variant="ghost" className="w-full gap-2">
-                                        <House weight="bold" className="w-4 h-4" />
-                                        Go home
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
+                        <ErrorState
+                            fullScreen={false}
+                            title="Unable to load share"
+                            description={error}
+                            onRetry={() => fetchShare()}
+                            showHomeLink={true}
+                            footerText=""
+                        />
                     ) : needsPassword ? (
                         <form onSubmit={handlePasswordSubmit} className="space-y-4">
                             <div className="py-6 text-center space-y-2">
