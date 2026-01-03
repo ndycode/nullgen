@@ -1,6 +1,6 @@
 # vxid.cc
 
-A privacy-first toolkit with 64+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
+A privacy-first toolkit with 67+ browser utilities. All tools run client-side — no sign-ups, no tracking, just practical tools for developers and creators.
 
 ## Features
 
@@ -63,7 +63,7 @@ Visit `http://localhost:3000`
 │   ├── s/[code]/page.tsx     # Share viewer
 │   └── api/                  # Upload/download/share APIs
 ├── components/
-│   ├── tools/                # 64 tool components
+│   ├── tools/                # 67 tool components
 │   ├── tools-carousel.tsx    # Navigation with favorites/recent
 │   ├── error-boundary.tsx    # Client-side error boundary
 │   ├── animated-background.tsx
@@ -132,7 +132,7 @@ ENV_VALIDATION_STRICT=false  # Skip env validation for testing
 | `npm run test:coverage` | Run tests with coverage   |
 | `npm run typecheck`     | Check TypeScript types    |
 
-## Tools (64)
+## Tools (67)
 
 ### Checker (11)
 
