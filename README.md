@@ -67,19 +67,32 @@ Visit `http://localhost:3000`
 └── lib/
     ├── tools-config.ts       # Tool definitions
     ├── tool-preferences.ts   # Favorites/recent (localStorage)
+    ├── env.ts                # Environment config with validation
+    ├── db.ts                 # Database operations (Supabase)
+    ├── r2.ts                 # R2 storage service
+    ├── passwords.ts          # Password hashing (scrypt)
     └── confetti.ts           # Animation utilities
 ```
 
 ## Environment Variables
 
 ```env
+# Required for file sharing (fails loudly if missing)
 R2_ACCOUNT_ID=your_account_id
 R2_ACCESS_KEY_ID=your_access_key
 R2_SECRET_ACCESS_KEY=your_secret_key
 R2_BUCKET_NAME=your_bucket_name
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Optional
 R2_PUBLIC_URL=your_public_url
 UPSTASH_REDIS_REST_URL=your_upstash_rest_url
 UPSTASH_REDIS_REST_TOKEN=your_upstash_rest_token
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# Development only
+ENV_VALIDATION_STRICT=false  # Skip env validation for testing
 ```
 
 ## Available Scripts

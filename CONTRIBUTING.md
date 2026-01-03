@@ -54,9 +54,12 @@ Visit `http://localhost:3000` to see the app.
 ├── hooks/               # Custom React hooks
 ├── lib/                 # Utility functions & services
 │   ├── constants.ts     # App constants
+│   ├── env.ts           # Environment config with validation
 │   ├── errors.ts        # Error classes
 │   ├── logger.ts        # Structured logging
-│   └── r2.ts            # R2 storage service
+│   ├── db.ts            # Database operations (Supabase)
+│   ├── r2.ts            # R2 storage service
+│   └── passwords.ts     # Password hashing (scrypt)
 └── types/               # TypeScript type definitions
 ```
 
