@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import crypto from "crypto";
 import { CreateShareRequest, ShareType } from "@/lib/share-types";
 import {
@@ -109,9 +111,8 @@ export async function POST(request: NextRequest) {
         }
 
         const normalizedContent = type === "image" ? content : content.trim();
-        const normalizedPassword = typeof password === "string" && password.trim()
-            ? password.trim()
-            : null;
+        const normalizedPassword =
+            typeof password === "string" && password.trim() ? password.trim() : null;
         const normalizedBurn = Boolean(burnAfterReading);
 
         if (!normalizedContent || !type) {
@@ -156,9 +157,7 @@ export async function POST(request: NextRequest) {
             imageMimeType = parsed.mimeType;
         }
 
-        const parsedExpiry = Number.isFinite(Number(expiryMinutes))
-            ? Number(expiryMinutes)
-            : 60;
+        const parsedExpiry = Number.isFinite(Number(expiryMinutes)) ? Number(expiryMinutes) : 60;
         const safeExpiryMinutes = Math.min(Math.max(parsedExpiry, 1), MAX_SHARE_EXPIRY_MINUTES);
         const expiresAt = new Date(Date.now() + safeExpiryMinutes * 60 * 1000);
         const passwordHash = normalizedPassword
@@ -198,17 +197,25 @@ export async function POST(request: NextRequest) {
         }
 
         if (!reserved) {
-            return jsonResponse({ error: "Failed to generate unique code" }, { status: 500 }, timings);
+            return jsonResponse(
+                { error: "Failed to generate unique code" },
+                { status: 500 },
+                timings
+            );
         }
 
         const baseUrl = request.nextUrl.origin;
         const url = `${baseUrl}/s/${code}`;
 
-        return jsonResponse({
-            code,
-            url,
-            expiresAt: expiresAt.toISOString(),
-        }, undefined, timings);
+        return jsonResponse(
+            {
+                code,
+                url,
+                expiresAt: expiresAt.toISOString(),
+            },
+            undefined,
+            timings
+        );
     } catch (error) {
         logger.exception("Share creation error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);

@@ -1,7 +1,9 @@
 "use client";
 
+export const dynamic = "force-static";
+
 import { useState } from "react";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ToolsCarousel } from "@/components/tools-carousel";
@@ -15,70 +17,262 @@ const ToolLoading = () => (
 
 // IMPORTANT: Order MUST match TOOLS array in tools-config.ts exactly.
 const TOOL_COMPONENTS = [
-    dynamic(() => import("@/components/tools/ip-checker").then((m) => m.IpChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/dns-checker").then((m) => m.DnsChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/whois-checker").then((m) => m.WhoisChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/ssl-checker").then((m) => m.SslChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/ping-checker").then((m) => m.PingChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/useragent-checker").then((m) => m.UserAgentChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/screen-checker").then((m) => m.ScreenChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/cookies-checker").then((m) => m.CookiesChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/webgl-checker").then((m) => m.WebGLChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/password-checker").then((m) => m.PasswordChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/leak-checker").then((m) => m.LeakChecker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/dead-drop").then((m) => m.DeadDrop), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/qr-gen").then((m) => m.QRGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/link-shortener").then((m) => m.LinkShortener), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/pastebin").then((m) => m.Pastebin), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-host").then((m) => m.ImageHost), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/secret-note").then((m) => m.SecretNote), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/code-share").then((m) => m.CodeShare), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/json-share").then((m) => m.JsonShare), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/csv-share").then((m) => m.CsvShare), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/passgen").then((m) => m.PassGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/color-picker").then((m) => m.ColorPicker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/barcode-gen").then((m) => m.BarcodeGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/fake-data-gen").then((m) => m.FakeDataGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/color-palette-gen").then((m) => m.ColorPaletteGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/credit-card-gen").then((m) => m.CreditCardGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/string-gen").then((m) => m.StringGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/integer-gen").then((m) => m.IntegerGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/sequence-gen").then((m) => m.SequenceGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/username-gen").then((m) => m.UsernameGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/business-name-gen").then((m) => m.BusinessNameGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/iban-gen").then((m) => m.IbanGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/mac-gen").then((m) => m.MacGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/privacy-stripper").then((m) => m.PrivacyStripper), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-compressor").then((m) => m.ImageCompressor), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/bulk-resizer").then((m) => m.BulkResizer), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/word-count").then((m) => m.WordCount), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/case-converter").then((m) => m.CaseConverter), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/text-cleaner").then((m) => m.TextCleaner), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/emoji-picker").then((m) => m.EmojiPicker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-converter").then((m) => m.ImageConverter), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/favicon-gen").then((m) => m.FaviconGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/hash-gen").then((m) => m.HashGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/date-diff").then((m) => m.DateDiff), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/duplicate-remover").then((m) => m.DuplicateRemover), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/text-reverser").then((m) => m.TextReverser), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/character-map").then((m) => m.CharacterMap), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/number-converter").then((m) => m.NumberConverter), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/uuid-generator").then((m) => m.UuidGenerator), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/bg-remover").then((m) => m.BackgroundRemover), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-cropper").then((m) => m.ImageCropper), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/svg-optimizer").then((m) => m.SvgOptimizer), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/aspect-ratio-calc").then((m) => m.AspectRatioCalc), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/color-from-image").then((m) => m.ColorFromImage), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-watermarker").then((m) => m.ImageWatermarker), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-splitter").then((m) => m.ImageSplitter), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-blur").then((m) => m.ImageBlur), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-rotate").then((m) => m.ImageRotate), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/image-filter").then((m) => m.ImageFilter), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/lorem-gen").then((m) => m.LoremGen), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/base64-tool").then((m) => m.Base64Tool), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/regex-tester").then((m) => m.RegexTester), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/timestamp-tool").then((m) => m.TimestampTool), { ssr: false, loading: ToolLoading }),
-    dynamic(() => import("@/components/tools/gradient-gen").then((m) => m.GradientGen), { ssr: false, loading: ToolLoading }),
+    nextDynamic(() => import("@/components/tools/ip-checker").then((m) => m.IpChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/dns-checker").then((m) => m.DnsChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/whois-checker").then((m) => m.WhoisChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/ssl-checker").then((m) => m.SslChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/ping-checker").then((m) => m.PingChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/useragent-checker").then((m) => m.UserAgentChecker),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/screen-checker").then((m) => m.ScreenChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/cookies-checker").then((m) => m.CookiesChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/webgl-checker").then((m) => m.WebGLChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/password-checker").then((m) => m.PasswordChecker),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/leak-checker").then((m) => m.LeakChecker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/dead-drop").then((m) => m.DeadDrop), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/qr-gen").then((m) => m.QRGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/link-shortener").then((m) => m.LinkShortener), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/pastebin").then((m) => m.Pastebin), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-host").then((m) => m.ImageHost), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/secret-note").then((m) => m.SecretNote), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/code-share").then((m) => m.CodeShare), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/json-share").then((m) => m.JsonShare), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/csv-share").then((m) => m.CsvShare), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/passgen").then((m) => m.PassGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/color-picker").then((m) => m.ColorPicker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/barcode-gen").then((m) => m.BarcodeGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/fake-data-gen").then((m) => m.FakeDataGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/color-palette-gen").then((m) => m.ColorPaletteGen),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/credit-card-gen").then((m) => m.CreditCardGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/string-gen").then((m) => m.StringGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/integer-gen").then((m) => m.IntegerGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/sequence-gen").then((m) => m.SequenceGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/username-gen").then((m) => m.UsernameGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/business-name-gen").then((m) => m.BusinessNameGen),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/iban-gen").then((m) => m.IbanGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/mac-gen").then((m) => m.MacGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/privacy-stripper").then((m) => m.PrivacyStripper),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(
+        () => import("@/components/tools/image-compressor").then((m) => m.ImageCompressor),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/bulk-resizer").then((m) => m.BulkResizer), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/word-count").then((m) => m.WordCount), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/case-converter").then((m) => m.CaseConverter), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/text-cleaner").then((m) => m.TextCleaner), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/emoji-picker").then((m) => m.EmojiPicker), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-converter").then((m) => m.ImageConverter), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/favicon-gen").then((m) => m.FaviconGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/hash-gen").then((m) => m.HashGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/date-diff").then((m) => m.DateDiff), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/duplicate-remover").then((m) => m.DuplicateRemover),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/text-reverser").then((m) => m.TextReverser), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/character-map").then((m) => m.CharacterMap), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/number-converter").then((m) => m.NumberConverter),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/uuid-generator").then((m) => m.UuidGenerator), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/bg-remover").then((m) => m.BackgroundRemover), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-cropper").then((m) => m.ImageCropper), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/svg-optimizer").then((m) => m.SvgOptimizer), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/aspect-ratio-calc").then((m) => m.AspectRatioCalc),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/color-from-image").then((m) => m.ColorFromImage), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(
+        () => import("@/components/tools/image-watermarker").then((m) => m.ImageWatermarker),
+        { ssr: false, loading: ToolLoading }
+    ),
+    nextDynamic(() => import("@/components/tools/image-splitter").then((m) => m.ImageSplitter), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-blur").then((m) => m.ImageBlur), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-rotate").then((m) => m.ImageRotate), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/image-filter").then((m) => m.ImageFilter), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/lorem-gen").then((m) => m.LoremGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/base64-tool").then((m) => m.Base64Tool), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/regex-tester").then((m) => m.RegexTester), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/timestamp-tool").then((m) => m.TimestampTool), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
+    nextDynamic(() => import("@/components/tools/gradient-gen").then((m) => m.GradientGen), {
+        ssr: false,
+        loading: ToolLoading,
+    }),
 ];
 
 const transition = {

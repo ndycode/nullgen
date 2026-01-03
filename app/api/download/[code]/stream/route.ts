@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
 import { StorageError, ValidationError, formatErrorResponse } from "@/lib/errors";
-import { consumeDownloadToken, deleteFileById, getFileById, getDownloadToken, type FileRecord } from "@/lib/db";
+import {
+    consumeDownloadToken,
+    deleteFileById,
+    getFileById,
+    getDownloadToken,
+    type FileRecord,
+} from "@/lib/db";
 import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
@@ -35,15 +43,23 @@ async function cleanupExpired(record: FileRecord, timings?: Record<string, numbe
     try {
         if (timings) {
             await withTiming(timings, "db", () => deleteFileById(record.id));
-            const deleteResult = await withTiming(timings, "r2", () => r2Storage.deleteFile(record.storage_key));
+            const deleteResult = await withTiming(timings, "r2", () =>
+                r2Storage.deleteFile(record.storage_key)
+            );
             if (!deleteResult.success) {
-                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+                logger.warn("R2 cleanup failed (non-fatal)", {
+                    code: record.code,
+                    error: deleteResult.error,
+                });
             }
         } else {
             await deleteFileById(record.id);
             const deleteResult = await r2Storage.deleteFile(record.storage_key);
             if (!deleteResult.success) {
-                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+                logger.warn("R2 cleanup failed (non-fatal)", {
+                    code: record.code,
+                    error: deleteResult.error,
+                });
             }
         }
     } catch (error) {
@@ -51,10 +67,7 @@ async function cleanupExpired(record: FileRecord, timings?: Record<string, numbe
     }
 }
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ code: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
     const requestId = crypto.randomUUID().slice(0, 8);
     const timings: Record<string, number> = {};
 
@@ -94,7 +107,9 @@ export async function GET(
             return jsonResponse({ error: "File has expired" }, { status: 410 }, timings);
         }
 
-        const stream = await withTiming(timings, "r2", () => r2Storage.downloadStream(record.storage_key));
+        const stream = await withTiming(timings, "r2", () =>
+            r2Storage.downloadStream(record.storage_key)
+        );
 
         if (tokenRecord.delete_after) {
             // NOTE: Delete-after-download is not fully atomic.
@@ -102,19 +117,26 @@ export async function GET(
             // Mitigation: Configure R2 lifecycle rules to auto-delete objects >7 days old.
             // See: https://developers.cloudflare.com/r2/buckets/object-lifecycles/
             await withTiming(timings, "db", () => deleteFileById(record.id));
-            const deleteResult = await withTiming(timings, "r2", () => r2Storage.deleteFile(record.storage_key));
+            const deleteResult = await withTiming(timings, "r2", () =>
+                r2Storage.deleteFile(record.storage_key)
+            );
             if (!deleteResult.success) {
-                logger.warn("R2 delete failed after download (non-fatal, relies on lifecycle rules)", {
-                    code: record.code,
-                    error: deleteResult.error
-                });
+                logger.warn(
+                    "R2 delete failed after download (non-fatal, relies on lifecycle rules)",
+                    {
+                        code: record.code,
+                        error: deleteResult.error,
+                    }
+                );
             }
         }
 
         return new NextResponse(stream, {
             headers: {
                 ...NO_STORE_HEADERS,
-                ...(Object.keys(timings).length > 0 ? { "Server-Timing": formatServerTiming(timings) } : {}),
+                ...(Object.keys(timings).length > 0
+                    ? { "Server-Timing": formatServerTiming(timings) }
+                    : {}),
                 "Content-Type": record.mime_type || "application/octet-stream",
                 "Content-Disposition": `attachment; filename="${encodeURIComponent(record.original_name)}"`,
                 "Content-Length": record.size.toString(),

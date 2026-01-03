@@ -30,6 +30,12 @@ interface EnvConfig {
     // App
     NODE_ENV: "development" | "production" | "test";
     NEXT_PUBLIC_APP_URL?: string;
+
+    // Feature Flags
+    FEATURE_UPLOAD_ENABLED: boolean;
+    FEATURE_DOWNLOAD_ENABLED: boolean;
+    FEATURE_SHARE_ENABLED: boolean;
+    FEATURE_CRON_ENABLED: boolean;
 }
 
 interface EnvValidation {
@@ -98,9 +104,7 @@ function getEnvConfig(): EnvConfig {
     // Skip during build phase to allow 'next build' to complete
     const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
     if (!validation.isValid && strictValidation && !isBuildPhase) {
-        const missingList = validation.missing
-            .map((v) => `  - ${v}`)
-            .join("\n");
+        const missingList = validation.missing.map((v) => `  - ${v}`).join("\n");
         const errorMsg = [
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "FATAL: Missing required environment variables:",
@@ -118,7 +122,7 @@ function getEnvConfig(): EnvConfig {
     if (!validation.isValid) {
         logger.warn(
             `ENV_VALIDATION_STRICT=false: Running with missing vars: ${validation.missing.join(", ")}. ` +
-            "Storage and database operations will fail."
+                "Storage and database operations will fail."
         );
     }
 
@@ -134,6 +138,10 @@ function getEnvConfig(): EnvConfig {
         UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
         NODE_ENV: (process.env.NODE_ENV as EnvConfig["NODE_ENV"]) || "development",
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        FEATURE_UPLOAD_ENABLED: process.env.FEATURE_UPLOAD_ENABLED !== "false",
+        FEATURE_DOWNLOAD_ENABLED: process.env.FEATURE_DOWNLOAD_ENABLED !== "false",
+        FEATURE_SHARE_ENABLED: process.env.FEATURE_SHARE_ENABLED !== "false",
+        FEATURE_CRON_ENABLED: process.env.FEATURE_CRON_ENABLED !== "false",
     };
 }
 

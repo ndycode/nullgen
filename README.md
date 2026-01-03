@@ -75,16 +75,18 @@ Visit `http://localhost:3000`
 │   │   ├── file-db.ts        # File metadata operations
 │   │   ├── share-db.ts       # Share operations
 │   │   ├── token-db.ts       # Download token operations
-│   │   └── index.ts          # Barrel export
+│   │   └── ...               # Additional DB tokens
 │   ├── tools-config.ts       # Tool definitions (IDs are stable)
 │   ├── tool-preferences.ts   # Favorites/recent (localStorage)
 │   ├── env.ts                # Environment config with validation
 │   ├── r2.ts                 # R2 storage service
 │   ├── passwords.ts          # Password hashing (scrypt)
 │   ├── constants.ts          # Constants + validation functions
-│   └── confetti.ts           # Animation utilities
+│   ├── confetti.ts           # Animation utilities
+│   └── ...                   # Additional utilities
 └── scripts/sql/              # Database migrations
     ├── 001_perf_tables.sql   # Core table schema
+    ├── 002_cleanup_documentation.sql # Cleanup job docs
     ├── 003_atomic_functions.sql  # Atomic share/upload functions
     ├── 004_check_constraints.sql # Schema CHECK constraints
     └── 005_burned_invariant.sql  # Burned state irreversibility
@@ -140,17 +142,17 @@ ip, dns, whois, ssl, ping, useragent, screen, cookies, webgl, password, leak
 
 drop, qr, shorten, paste, imghost, secret, code, json, csv
 
-### Generate (16)
+### Generate (15)
 
-pass, color, barcode, fake, palette, card, string, integer, sequence, username, business, iban, mac, hash, uuid, gradient
+pass, color, barcode, fake, palette, card, string, integer, sequence, username, business, iban, mac, hash, gradient
 
 ### Text (14)
 
-count, case, clean, emoji, days, dedup, reverse, chars, numbers, lorem, base64, regex, timestamp, privacy
+count, case, clean, emoji, days, dedup, reverse, chars, numbers, lorem, base64, regex, timestamp, uuid
 
-### Image (14)
+### Image (15)
 
-compress, resize, convert, favicon, erase, crop, split, svg, pick, watermark, ratio, blur, rotate, filter
+compress, resize, convert, favicon, erase, crop, split, svg, pick, watermark, ratio, blur, rotate, filter, privacy
 
 ## Design Principles
 
@@ -178,6 +180,7 @@ Run SQL migrations in order against your Supabase database:
 ```bash
 # Via Supabase Dashboard > SQL Editor, or psql:
 psql $DATABASE_URL -f scripts/sql/001_perf_tables.sql
+psql $DATABASE_URL -f scripts/sql/002_cleanup_documentation.sql
 psql $DATABASE_URL -f scripts/sql/003_atomic_functions.sql
 psql $DATABASE_URL -f scripts/sql/004_check_constraints.sql
 psql $DATABASE_URL -f scripts/sql/005_burned_invariant.sql

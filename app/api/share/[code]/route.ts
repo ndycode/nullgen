@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import crypto from "crypto";
-import { getShareWithContentByCode, updateShareViewCount, type ShareWithContentRecord } from "@/lib/db";
+import {
+    getShareWithContentByCode,
+    updateShareViewCount,
+    type ShareWithContentRecord,
+} from "@/lib/db";
 import { ValidationError, formatErrorResponse } from "@/lib/errors";
 import { verifyPassword } from "@/lib/passwords";
 import { SHARE_CODE_LENGTH, isValidShareCode } from "@/lib/constants";
@@ -27,7 +33,6 @@ function jsonResponse(
         headers,
     });
 }
-
 
 function normalizeShare(record: ShareWithContentRecord) {
     return {
@@ -68,17 +73,25 @@ async function processShare(
         }
 
         if (normalized.burned) {
-            return jsonResponse({ error: "This share has been destroyed" }, { status: 410 }, timings);
+            return jsonResponse(
+                { error: "This share has been destroyed" },
+                { status: 410 },
+                timings
+            );
         }
 
         if (normalized.passwordHash) {
             if (!providedPassword) {
-                return jsonResponse({
-                    error: "Password required",
-                    requiresPassword: true,
-                    type: normalized.type,
-                    burnAfterReading: normalized.burnAfterReading,
-                }, { status: 401 }, timings);
+                return jsonResponse(
+                    {
+                        error: "Password required",
+                        requiresPassword: true,
+                        type: normalized.type,
+                        burnAfterReading: normalized.burnAfterReading,
+                    },
+                    { status: 401 },
+                    timings
+                );
             }
             const storedHash = normalized.passwordHash;
             const passwordValid = await withTiming(timings, "crypto", () =>
@@ -106,10 +119,7 @@ async function processShare(
     return jsonResponse({ error: "Share busy, retry" }, { status: 409 }, timings);
 }
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ code: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
     const requestId = crypto.randomUUID().slice(0, 8);
     const timings: Record<string, number> = {};
     try {
@@ -124,17 +134,21 @@ export async function GET(
             return result;
         }
 
-        return jsonResponse({
-            type: result.type,
-            content: result.content,
-            language: result.language,
-            originalName: result.originalName,
-            mimeType: result.mimeType,
-            expiresAt: result.expiresAt,
-            burnAfterReading: result.burnAfterReading,
-            burned: result.burned,
-            requiresPassword: !!result.passwordHash,
-        }, undefined, timings);
+        return jsonResponse(
+            {
+                type: result.type,
+                content: result.content,
+                language: result.language,
+                originalName: result.originalName,
+                mimeType: result.mimeType,
+                expiresAt: result.expiresAt,
+                burnAfterReading: result.burnAfterReading,
+                burned: result.burned,
+                requiresPassword: !!result.passwordHash,
+            },
+            undefined,
+            timings
+        );
     } catch (error) {
         logger.exception("Share retrieval error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
@@ -163,17 +177,21 @@ export async function POST(
             return result;
         }
 
-        return jsonResponse({
-            type: result.type,
-            content: result.content,
-            language: result.language,
-            originalName: result.originalName,
-            mimeType: result.mimeType,
-            expiresAt: result.expiresAt,
-            burnAfterReading: result.burnAfterReading,
-            burned: result.burned,
-            requiresPassword: !!result.passwordHash,
-        }, undefined, timings);
+        return jsonResponse(
+            {
+                type: result.type,
+                content: result.content,
+                language: result.language,
+                originalName: result.originalName,
+                mimeType: result.mimeType,
+                expiresAt: result.expiresAt,
+                burnAfterReading: result.burnAfterReading,
+                burned: result.burned,
+                requiresPassword: !!result.passwordHash,
+            },
+            undefined,
+            timings
+        );
     } catch (error) {
         logger.exception("Share retrieval error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);

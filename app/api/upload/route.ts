@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
@@ -32,7 +34,7 @@ function generateCode(): string {
 
 /**
  * Check if MIME type is in the allowed list.
- * 
+ *
  * SECURITY NOTE: This validates the *declared* MIME type from the client request,
  * NOT the actual file contents. Clients can lie about MIME types.
  * This is a first-line defense; for sensitive applications, also verify
@@ -105,7 +107,9 @@ export async function POST(request: NextRequest) {
         const expiryMinutes = Number.isFinite(expiryRaw)
             ? Math.min(Math.max(expiryRaw, 1), MAX_EXPIRY_MINUTES)
             : DEFAULT_EXPIRY_MINUTES;
-        const maxDownloads = ALLOWED_MAX_DOWNLOADS.includes(maxDownloadsRaw as (typeof ALLOWED_MAX_DOWNLOADS)[number])
+        const maxDownloads = ALLOWED_MAX_DOWNLOADS.includes(
+            maxDownloadsRaw as (typeof ALLOWED_MAX_DOWNLOADS)[number]
+        )
             ? maxDownloadsRaw
             : DEFAULT_MAX_DOWNLOADS;
 
@@ -166,7 +170,9 @@ export async function POST(request: NextRequest) {
 
         const headers = {
             ...NO_STORE_HEADERS,
-            ...(Object.keys(timings).length > 0 ? { "Server-Timing": formatServerTiming(timings) } : {}),
+            ...(Object.keys(timings).length > 0
+                ? { "Server-Timing": formatServerTiming(timings) }
+                : {}),
         };
 
         return NextResponse.json(

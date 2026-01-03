@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 import ShareClient from "./share-client";
 
 export default function SharePage() {

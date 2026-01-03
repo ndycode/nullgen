@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
@@ -8,7 +10,7 @@ import { isCronEnabled } from "@/lib/constants";
 /**
  * Cleanup expired records from the database and storage.
  * Called by Vercel Cron (see vercel.json) or manually.
- * 
+ *
  * Security: Protected by CRON_SECRET header validation.
  */
 
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
                 }
             }
 
-            const fileIds = expiredFiles.map(f => f.id);
+            const fileIds = expiredFiles.map((f) => f.id);
             await supabase.from("file_metadata").delete().in("id", fileIds);
             stats.files = expiredFiles.length;
         }
@@ -107,11 +109,11 @@ export async function GET(request: NextRequest) {
 
         if (expiredShares && expiredShares.length > 0) {
             // Delete share_contents first (parent records)
-            const contentIds = expiredShares.map(s => s.content_id);
+            const contentIds = expiredShares.map((s) => s.content_id);
             await supabase.from("share_contents").delete().in("id", contentIds);
 
             // Then delete shares (child records)
-            const shareIds = expiredShares.map(s => s.id);
+            const shareIds = expiredShares.map((s) => s.id);
             await supabase.from("shares").delete().in("id", shareIds);
         }
         stats.shares = expiredShares?.length ?? 0;
@@ -126,9 +128,6 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         logger.exception("Cleanup error", error);
         // Don't leak error details in response
-        return NextResponse.json(
-            { error: "Cleanup failed" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: "Cleanup failed" }, { status: 500 });
     }
 }

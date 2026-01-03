@@ -1,6 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -20,7 +23,7 @@ import {
     Eye,
     EyeSlash,
     ArrowClockwise,
-    House
+    House,
 } from "@phosphor-icons/react";
 import { ShareType } from "@/lib/share-types";
 
@@ -106,7 +109,7 @@ export default function ShareViewerPage() {
             setNeedsPassword(false);
 
             // For links, redirect
-            if (json.type === 'link') {
+            if (json.type === "link") {
                 window.location.href = json.content;
             }
         } catch {
@@ -135,8 +138,12 @@ export default function ShareViewerPage() {
         setTimeout(() => setCopied(false), 1500);
     };
 
-    const Icon = data?.type ? TYPE_ICONS[data.type] : (shareType ? TYPE_ICONS[shareType] : FileText);
-    const label = data?.type ? TYPE_LABELS[data.type] : (shareType ? TYPE_LABELS[shareType] : "Share");
+    const Icon = data?.type ? TYPE_ICONS[data.type] : shareType ? TYPE_ICONS[shareType] : FileText;
+    const label = data?.type
+        ? TYPE_LABELS[data.type]
+        : shareType
+          ? TYPE_LABELS[shareType]
+          : "Share";
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
@@ -169,7 +176,10 @@ export default function ShareViewerPage() {
                         </div>
                     ) : error ? (
                         <div className="py-8 text-center space-y-4">
-                            <Warning weight="duotone" className="w-12 h-12 text-destructive mx-auto" />
+                            <Warning
+                                weight="duotone"
+                                className="w-12 h-12 text-destructive mx-auto"
+                            />
                             <p className="text-destructive font-medium">{error}</p>
                             <div className="flex flex-col sm:flex-row gap-2">
                                 <Button
@@ -180,12 +190,12 @@ export default function ShareViewerPage() {
                                     <ArrowClockwise weight="bold" className="w-4 h-4" />
                                     Try again
                                 </Button>
-                                <a href="/" className="flex-1">
+                                <Link href="/" className="flex-1">
                                     <Button variant="ghost" className="w-full gap-2">
                                         <House weight="bold" className="w-4 h-4" />
                                         Go home
                                     </Button>
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     ) : needsPassword ? (
@@ -207,7 +217,11 @@ export default function ShareViewerPage() {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 >
-                                    {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    {showPassword ? (
+                                        <EyeSlash className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
                                 </button>
                             </div>
                             <Button type="submit" className="w-full" disabled={!password}>
@@ -225,13 +239,13 @@ export default function ShareViewerPage() {
                             )}
 
                             {/* Content viewer based on type */}
-                            {data.type === 'link' && (
+                            {data.type === "link" && (
                                 <div className="py-8 text-center">
                                     <p className="text-muted-foreground">Redirecting...</p>
                                 </div>
                             )}
 
-                            {(data.type === 'paste' || data.type === 'note') && (
+                            {(data.type === "paste" || data.type === "note") && (
                                 <div className="bg-muted/30 rounded-lg p-4 max-h-96 overflow-auto">
                                     <pre className="whitespace-pre-wrap text-sm font-mono">
                                         {data.content}
@@ -239,10 +253,12 @@ export default function ShareViewerPage() {
                                 </div>
                             )}
 
-                            {data.type === 'code' && (
+                            {data.type === "code" && (
                                 <div className="space-y-2">
                                     {data.language && (
-                                        <span className="text-xs text-muted-foreground">{data.language}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {data.language}
+                                        </span>
                                     )}
                                     <div className="bg-muted/30 rounded-lg p-4 max-h-96 overflow-auto">
                                         <pre className="text-sm font-mono">
@@ -252,7 +268,7 @@ export default function ShareViewerPage() {
                                 </div>
                             )}
 
-                            {data.type === 'json' && (
+                            {data.type === "json" && (
                                 <div className="bg-muted/30 rounded-lg p-4 max-h-96 overflow-auto">
                                     <pre className="text-sm font-mono">
                                         {formatJson(data.content)}
@@ -260,25 +276,38 @@ export default function ShareViewerPage() {
                                 </div>
                             )}
 
-                            {data.type === 'csv' && (
+                            {data.type === "csv" && (
                                 <div className="overflow-auto max-h-96">
                                     <table className="w-full text-sm">
                                         <tbody>
-                                            {data.content.split('\n').filter(Boolean).map((row, i) => (
-                                                <tr key={i} className={i === 0 ? "bg-muted/50 font-semibold" : ""}>
-                                                    {row.split(',').map((cell, j) => (
-                                                        <td key={j} className="border px-2 py-1">
-                                                            {cell.trim()}
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
+                                            {data.content
+                                                .split("\n")
+                                                .filter(Boolean)
+                                                .map((row, i) => (
+                                                    <tr
+                                                        key={i}
+                                                        className={
+                                                            i === 0
+                                                                ? "bg-muted/50 font-semibold"
+                                                                : ""
+                                                        }
+                                                    >
+                                                        {row.split(",").map((cell, j) => (
+                                                            <td
+                                                                key={j}
+                                                                className="border px-2 py-1"
+                                                            >
+                                                                {cell.trim()}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
                                         </tbody>
                                     </table>
                                 </div>
                             )}
 
-                            {data.type === 'image' && (
+                            {data.type === "image" && (
                                 <div className="space-y-4">
                                     <div className="text-center">
                                         <img
@@ -306,13 +335,17 @@ export default function ShareViewerPage() {
                             )}
 
                             {/* Copy button */}
-                            {data.type !== 'link' && data.type !== 'image' && (
+                            {data.type !== "link" && data.type !== "image" && (
                                 <Button
                                     onClick={copyContent}
                                     variant="outline"
                                     className="w-full gap-2"
                                 >
-                                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                    {copied ? (
+                                        <Check className="w-4 h-4" />
+                                    ) : (
+                                        <Copy className="w-4 h-4" />
+                                    )}
                                     {copied ? "Copied!" : "Copy content"}
                                 </Button>
                             )}
@@ -322,7 +355,10 @@ export default function ShareViewerPage() {
 
                 {/* Footer */}
                 <p className="text-center text-xs text-muted-foreground/50">
-                    <a href="/" className="hover:text-foreground">vxid.cc</a> — privacy-first tools
+                    <Link href="/" className="hover:text-foreground">
+                        vxid.cc
+                    </Link>{" "}
+                    — privacy-first tools
                 </p>
             </motion.div>
         </main>

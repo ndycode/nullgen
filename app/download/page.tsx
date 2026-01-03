@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 import DownloadClient from "./download-client";
 
 export default function DownloadPage() {

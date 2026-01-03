@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
 import { StorageError, ValidationError, formatErrorResponse } from "@/lib/errors";
-import { CODE_LENGTH, DOWNLOAD_TOKEN_TTL_MINUTES, isValidDownloadCode, isDownloadEnabled } from "@/lib/constants";
+import {
+    CODE_LENGTH,
+    DOWNLOAD_TOKEN_TTL_MINUTES,
+    isValidDownloadCode,
+    isDownloadEnabled,
+} from "@/lib/constants";
 import { verifyPassword } from "@/lib/passwords";
 import {
     createDownloadToken,
@@ -34,27 +41,31 @@ function jsonResponse(
     });
 }
 
-
 /**
  * Best-effort cleanup of expired file data.
  * Logs failures but does not throw - cleanup failures are non-fatal.
  */
-async function cleanupExpired(
-    record: FileRecord,
-    timings?: Record<string, number>
-): Promise<void> {
+async function cleanupExpired(record: FileRecord, timings?: Record<string, number>): Promise<void> {
     try {
         if (timings) {
             await withTiming(timings, "db", () => deleteFileById(record.id));
-            const deleteResult = await withTiming(timings, "r2", () => r2Storage.deleteFile(record.storage_key));
+            const deleteResult = await withTiming(timings, "r2", () =>
+                r2Storage.deleteFile(record.storage_key)
+            );
             if (!deleteResult.success) {
-                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+                logger.warn("R2 cleanup failed (non-fatal)", {
+                    code: record.code,
+                    error: deleteResult.error,
+                });
             }
         } else {
             await deleteFileById(record.id);
             const deleteResult = await r2Storage.deleteFile(record.storage_key);
             if (!deleteResult.success) {
-                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+                logger.warn("R2 cleanup failed (non-fatal)", {
+                    code: record.code,
+                    error: deleteResult.error,
+                });
             }
         }
     } catch (error) {
@@ -62,11 +73,7 @@ async function cleanupExpired(
     }
 }
 
-
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ code: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
     const requestId = crypto.randomUUID().slice(0, 8);
     const timings: Record<string, number> = {};
 
@@ -102,15 +109,20 @@ export async function GET(
             return jsonResponse({ error: "Download limit reached" }, { status: 410 }, timings);
         }
 
-        return jsonResponse({
-            name: record.original_name,
-            size: record.size,
-            expiresAt: record.expires_at,
-            requiresPassword: record.password_hash !== null,
-            downloadsRemaining: record.max_downloads === -1
-                ? "unlimited"
-                : Math.max(record.max_downloads - record.download_count, 0),
-        }, undefined, timings);
+        return jsonResponse(
+            {
+                name: record.original_name,
+                size: record.size,
+                expiresAt: record.expires_at,
+                requiresPassword: record.password_hash !== null,
+                downloadsRemaining:
+                    record.max_downloads === -1
+                        ? "unlimited"
+                        : Math.max(record.max_downloads - record.download_count, 0),
+            },
+            undefined,
+            timings
+        );
     } catch (error) {
         logger.exception("Download metadata error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
@@ -152,7 +164,11 @@ export async function POST(
         while (attempt < maxAttempts) {
             const record = await withTiming(timings, "db", () => getFileByCode(code));
             if (!record) {
-                return jsonResponse({ error: "File not found or expired" }, { status: 404 }, timings);
+                return jsonResponse(
+                    { error: "File not found or expired" },
+                    { status: 404 },
+                    timings
+                );
             }
 
             const expiresAt = new Date(record.expires_at);
@@ -181,7 +197,8 @@ export async function POST(
             );
             if (result) {
                 updated = result;
-                shouldDelete = result.max_downloads !== -1 && result.download_count >= result.max_downloads;
+                shouldDelete =
+                    result.max_downloads !== -1 && result.download_count >= result.max_downloads;
                 break;
             }
 
@@ -194,19 +211,25 @@ export async function POST(
 
         const token = crypto.randomUUID();
         const tokenExpiresAt = new Date(Date.now() + DOWNLOAD_TOKEN_TTL_MINUTES * 60 * 1000);
-        await withTiming(timings, "db", () => createDownloadToken({
-            token,
-            file_id: updated.id,
-            code: updated.code,
-            delete_after: shouldDelete,
-            expires_at: tokenExpiresAt.toISOString(),
-        }));
+        await withTiming(timings, "db", () =>
+            createDownloadToken({
+                token,
+                file_id: updated.id,
+                code: updated.code,
+                delete_after: shouldDelete,
+                expires_at: tokenExpiresAt.toISOString(),
+            })
+        );
 
-        return jsonResponse({
-            token,
-            downloadUrl: `/api/download/${updated.code}/stream?token=${encodeURIComponent(token)}`,
-            expiresAt: tokenExpiresAt.toISOString(),
-        }, undefined, timings);
+        return jsonResponse(
+            {
+                token,
+                downloadUrl: `/api/download/${updated.code}/stream?token=${encodeURIComponent(token)}`,
+                expiresAt: tokenExpiresAt.toISOString(),
+            },
+            undefined,
+            timings
+        );
     } catch (error) {
         logger.exception("Download error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);

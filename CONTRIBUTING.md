@@ -24,18 +24,18 @@ Visit `http://localhost:3000` to see the app.
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Create production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Fix ESLint errors automatically |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check code formatting |
-| `npm test` | Run test suite |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run typecheck` | Run TypeScript type checking |
+| Command                 | Description                     |
+| ----------------------- | ------------------------------- |
+| `npm run dev`           | Start development server        |
+| `npm run build`         | Create production build         |
+| `npm run lint`          | Run ESLint                      |
+| `npm run lint:fix`      | Fix ESLint errors automatically |
+| `npm run format`        | Format code with Prettier       |
+| `npm run format:check`  | Check code formatting           |
+| `npm test`              | Run test suite                  |
+| `npm run test:watch`    | Run tests in watch mode         |
+| `npm run test:coverage` | Run tests with coverage report  |
+| `npm run typecheck`     | Run TypeScript type checking    |
 
 ## Code Style
 
@@ -60,14 +60,16 @@ Visit `http://localhost:3000` to see the app.
 │   ├── db/              # Database layer (domain-split)
 │   ├── r2.ts            # R2 storage service
 │   └── passwords.ts     # Password hashing (scrypt)
-└── types/               # TypeScript type definitions
+├── types/               # TypeScript type definitions
+├── vitest.config.ts     # Test configuration
+└── vitest.setup.ts      # Test environment setup
 ```
 
 ## Adding a New Tool
 
 1. Create component in `components/tools/[tool-name].tsx`
 2. Add tool definition to `lib/tools-config.ts`
-3. Add tests in `components/tools/tools.test.tsx`
+3. Add tests in `components/tools/tools.test.tsx` (or appropriate category test file)
 4. Run `npm test` to verify
 
 ## Pull Request Process

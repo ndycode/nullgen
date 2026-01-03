@@ -9,7 +9,9 @@
     "core/quality/behavioral-coverage.txt",
     "core/architecture/operational-health.txt",
     "core/architecture/system-optimization.txt",
-    "core/process/code-review-standards.txt"
+    "core/process/code-review-standards.txt",
+    "core/process/documentation-integrity.txt",
+    "web/frontend/nextjs/render-performance.txt"
   ],
   "versions": {
     "core/security/api-ergonomics.txt": "1.4.3",
@@ -21,6 +23,8 @@
     "core/quality/behavioral-coverage.txt": "1.4.3",
     "core/architecture/operational-health.txt": "1.4.3",
     "core/architecture/system-optimization.txt": "1.4.3",
-    "core/process/code-review-standards.txt": "1.4.3"
+    "core/process/code-review-standards.txt": "1.4.3",
+    "core/process/documentation-integrity.txt": "1.4.3",
+    "web/frontend/nextjs/render-performance.txt": "1.4.3"
   }
 }
