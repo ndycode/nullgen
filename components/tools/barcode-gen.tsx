@@ -115,7 +115,7 @@ export function BarcodeGen() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setShowText(!showText)}
-                        className={`px-2.5 py-1.5 text-xs rounded-lg transition-colors min-h-[36px] ${showText
+                        className={`px-2.5 py-1.5 text-xs rounded-lg transition-colors min-h-touch-xs ${showText
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
@@ -124,14 +124,14 @@ export function BarcodeGen() {
                     </button>
                     <button
                         onClick={copyAsSvg}
-                        className="flex-1 px-2.5 py-1.5 text-xs bg-muted text-muted-foreground hover:bg-muted/80 rounded-lg transition-colors flex items-center justify-center gap-1 min-h-[36px]"
+                        className="flex-1 px-2.5 py-1.5 text-xs bg-muted text-muted-foreground hover:bg-muted/80 rounded-lg transition-colors flex items-center justify-center gap-1 min-h-touch-xs"
                     >
                         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                         {copied ? "copied!" : "copy svg"}
                     </button>
                     <button
                         onClick={download}
-                        className="flex-1 px-2.5 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg transition-colors flex items-center justify-center gap-1 min-h-[36px]"
+                        className="flex-1 px-2.5 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg transition-colors flex items-center justify-center gap-1 min-h-touch-xs"
                     >
                         <DownloadSimple className="w-3 h-3" />
                         download

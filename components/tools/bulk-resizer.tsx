@@ -153,7 +153,7 @@ export function BulkResizer() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-zone-lg text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}
@@ -221,7 +221,7 @@ export function BulkResizer() {
             {/* Custom dimensions */}
             <div className="flex items-center gap-2">
                 <div className="flex-1">
-                    <label className="text-[10px] text-muted-foreground">width (px)</label>
+                    <label className="text-2xs text-muted-foreground">width (px)</label>
                     <Input
                         type="number"
                         placeholder="auto"
@@ -246,7 +246,7 @@ export function BulkResizer() {
                 </motion.button>
 
                 <div className="flex-1">
-                    <label className="text-[10px] text-muted-foreground">height (px)</label>
+                    <label className="text-2xs text-muted-foreground">height (px)</label>
                     <Input
                         type="number"
                         placeholder="auto"

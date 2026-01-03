@@ -120,7 +120,7 @@ export function ImageSplitter() {
                     onDragLeave={() => setIsDragOver(false)}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-[100px] cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-zone-lg cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                 >
                     <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
                     <p className="text-xs text-muted-foreground">drop image or click to browse</p>
@@ -134,7 +134,7 @@ export function ImageSplitter() {
                         <div className="relative w-[75%] h-[75%]" style={{ display: "grid", gridTemplateColumns: `repeat(${selectedGrid.cols}, 1fr)`, gridTemplateRows: `repeat(${selectedGrid.rows}, 1fr)` }}>
                             {Array.from({ length: selectedGrid.cols * selectedGrid.rows }).map((_, i) => (
                                 <div key={i} className="border border-primary/70 flex items-center justify-center bg-black/20">
-                                    <span className="text-[10px] text-white font-bold drop-shadow-lg">{i + startIndex}</span>
+                                    <span className="text-2xs text-white font-bold drop-shadow-lg">{i + startIndex}</span>
                                 </div>
                             ))}
                         </div>

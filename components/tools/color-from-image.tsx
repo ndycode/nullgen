@@ -133,7 +133,7 @@ export function ColorFromImage() {
                     onDragLeave={() => setIsDragOver(false)}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-[100px] cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-zone-lg cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                 >
                     <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
                     <p className="text-xs text-muted-foreground">drop image or click to browse</p>
@@ -154,7 +154,7 @@ export function ColorFromImage() {
                         <div className="absolute bottom-2 left-2 flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-lg border">
                             <div className="w-5 h-5 rounded border shadow-inner" style={{ backgroundColor: hoveredColor.hex }} />
                             <span className="text-xs font-mono font-medium">{getColorValue(hoveredColor)}</span>
-                            <span className="text-[10px] text-muted-foreground">click to add</span>
+                            <span className="text-2xs text-muted-foreground">click to add</span>
                         </div>
                     )}
                 </div>

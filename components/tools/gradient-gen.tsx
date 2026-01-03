@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ArrowClockwise, Plus, X } from "@phosphor-icons/react";
@@ -13,12 +13,17 @@ interface ColorStop {
     position: number;
 }
 
+// Default gradient colors (fallback if CSS vars not available)
+const DEFAULT_GRADIENT_START = "#ec4899";
+const DEFAULT_GRADIENT_END = "#8b5cf6";
+const DEFAULT_GRADIENT_NEUTRAL = "#ffffff";
+
 export function GradientGen() {
     const [type, setType] = useState<"linear" | "radial">("linear");
     const [direction, setDirection] = useState<Direction>("to right");
     const [stops, setStops] = useState<ColorStop[]>([
-        { color: "#ec4899", position: 0 },
-        { color: "#8b5cf6", position: 100 },
+        { color: DEFAULT_GRADIENT_START, position: 0 },
+        { color: DEFAULT_GRADIENT_END, position: 100 },
     ]);
     const [copied, setCopied] = useState(false);
 
@@ -43,7 +48,7 @@ export function GradientGen() {
     const addStop = () => {
         if (stops.length >= 5) return;
         const newPosition = Math.round((stops[stops.length - 1].position + stops[0].position) / 2);
-        setStops([...stops, { color: "#ffffff", position: newPosition }]);
+        setStops([...stops, { color: DEFAULT_GRADIENT_NEUTRAL, position: newPosition }]);
     };
 
     const removeStop = (index: number) => {
@@ -123,7 +128,7 @@ export function GradientGen() {
                             <button
                                 key={dir}
                                 onClick={() => setDirection(dir)}
-                                className={`py-1.5 text-[10px] rounded-lg transition-colors ${direction === dir
+                                className={`py-1.5 text-2xs rounded-lg transition-colors ${direction === dir
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-muted text-muted-foreground hover:text-foreground"
                                     }`}

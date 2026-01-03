@@ -152,6 +152,31 @@
   --sidebar-accent-foreground: oklch(0.2 0.02 285);
   --sidebar-border: oklch(0.91 0.005 285);
   --sidebar-ring: oklch(0.65 0.24 350);
+  /* Component-specific tokens */
+  --rainbow-btn-surface: #ffffff;
+  --rainbow-btn-surface-fade: rgba(18, 18, 19, 0.6);
+  --rainbow-btn-surface-transparent: rgba(18, 18, 19, 0);
+  /* Default gradient colors (brand) */
+  --gradient-start: oklch(0.65 0.24 350);
+  --gradient-end: oklch(0.6 0.2 280);
+  --gradient-neutral: oklch(0.98 0 0);
+  /* Grid animation color */
+  --flickering-grid-color: oklch(0.13 0.02 285);
+  /* Touch target sizes */
+  --touch-target-xs: 36px;
+  --touch-target-sm: 32px;
+  --touch-target-md: 44px;
+  --touch-target-lg: 56px;
+  /* Zone heights */
+  --zone-height-xs: 40px;
+  --zone-height-sm: 60px;
+  --zone-height-md: 80px;
+  --zone-height-lg: 100px;
+  --zone-height-xl: 120px;
+  --zone-height-2xl: 140px;
+  --zone-height-3xl: 160px;
+  /* Focus ring */
+  --ring-width-focus: 3px;
 }
 
 /* Dark Mode - Maia Style with Pink Theme */
@@ -194,6 +219,16 @@
   --sidebar-accent-foreground: oklch(0.96 0 0);
   --sidebar-border: oklch(0.30 0.018 285);
   --sidebar-ring: oklch(0.74 0.22 350);
+  /* Component-specific tokens */
+  --rainbow-btn-surface: #0a0a0a;
+  --rainbow-btn-surface-fade: rgba(10, 10, 10, 0.6);
+  --rainbow-btn-surface-transparent: rgba(0, 0, 0, 0);
+  /* Default gradient colors (brand) */
+  --gradient-start: oklch(0.74 0.22 350);
+  --gradient-end: oklch(0.68 0.2 280);
+  --gradient-neutral: oklch(0.12 0.015 285);
+  /* Grid animation color */
+  --flickering-grid-color: oklch(0.96 0 0);
 }
 
 @layer base {
@@ -225,13 +260,13 @@
    PREMIUM FOCUS & SELECTION SYSTEM
    ============================================ */
 ::selection {
-  background: #ec4899 !important;
-  color: #fff !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
 }
 
 ::-moz-selection {
-  background: #ec4899 !important;
-  color: #fff !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
 }
 
 /* Keep default focus styles - don't override globally */
@@ -420,11 +455,11 @@ input[type="range"]::-moz-range-thumb {
 
 .dropdown-shimmer {
   background: linear-gradient(90deg,
-      #ec4899 0%,
-      #fff 25%,
-      #ec4899 50%,
-      #fff 75%,
-      #ec4899 100%);
+      var(--primary) 0%,
+      var(--background) 25%,
+      var(--primary) 50%,
+      var(--background) 75%,
+      var(--primary) 100%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
@@ -483,6 +518,70 @@ input[type="range"]::-moz-range-thumb {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* Extra small text - for labels and hints (10px) */
+  .text-2xs {
+    font-size: 0.625rem;
+    /* 10px */
+    line-height: 1rem;
+  }
+
+  /* Touch target height utilities */
+  .min-h-touch-sm {
+    min-height: var(--touch-target-sm);
+    /* 32px */
+  }
+
+  .min-h-touch-md {
+    min-height: var(--touch-target-md);
+    /* 44px */
+  }
+
+  .min-h-touch-lg {
+    min-height: var(--touch-target-lg);
+    /* 56px */
+  }
+
+  /* Zone height utilities for upload areas and containers */
+  .min-h-zone-sm {
+    min-height: var(--zone-height-sm);
+    /* 60px */
+  }
+
+  .min-h-zone-md {
+    min-height: var(--zone-height-md);
+    /* 80px */
+  }
+
+  .min-h-zone-lg {
+    min-height: var(--zone-height-lg);
+    /* 100px */
+  }
+
+  .min-h-zone-xl {
+    min-height: var(--zone-height-xl);
+    /* 120px */
+  }
+
+  .min-h-touch-xs {
+    min-height: var(--touch-target-xs);
+    /* 36px */
+  }
+
+  .min-h-zone-xs {
+    min-height: var(--zone-height-xs);
+    /* 40px */
+  }
+
+  .min-h-zone-2xl {
+    min-height: var(--zone-height-2xl);
+    /* 140px */
+  }
+
+  .min-h-zone-3xl {
+    min-height: var(--zone-height-3xl);
+    /* 160px */
   }
 
   /* Fluid heading sizes - scale smoothly between breakpoints */

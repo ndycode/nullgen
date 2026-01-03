@@ -170,7 +170,7 @@ export function ImageWatermarker() {
                     onDragLeave={() => setIsDragOver(false)}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-[100px] cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-zone-lg cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                 >
                     <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
                     <p className="text-xs text-muted-foreground">drop image or click to browse</p>
@@ -204,15 +204,15 @@ export function ImageWatermarker() {
             {/* Quick settings - always visible */}
             <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
-                    <p className="text-[10px] text-muted-foreground">opacity %</p>
+                    <p className="text-2xs text-muted-foreground">opacity %</p>
                     <Input type="number" min={10} max={100} value={opacity} onChange={(e) => setOpacity(parseInt(e.target.value) || 50)} className="text-xs h-8 text-center" />
                 </div>
                 <div className="space-y-1">
-                    <p className="text-[10px] text-muted-foreground">size px</p>
+                    <p className="text-2xs text-muted-foreground">size px</p>
                     <Input type="number" min={8} max={200} value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value) || 24)} className="text-xs h-8 text-center" />
                 </div>
                 <div className="space-y-1">
-                    <p className="text-[10px] text-muted-foreground">color</p>
+                    <p className="text-2xs text-muted-foreground">color</p>
                     <div className="h-8 flex items-center">
                         <ColorPicker color={color} onChange={setColor} />
                     </div>
@@ -248,11 +248,11 @@ export function ImageWatermarker() {
                             {/* Rotation & Padding */}
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] text-muted-foreground">rotation °</p>
+                                    <p className="text-2xs text-muted-foreground">rotation °</p>
                                     <Input type="number" min={-180} max={180} value={rotation} onChange={(e) => setRotation(parseInt(e.target.value) || 0)} className="text-xs h-8 text-center" />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] text-muted-foreground">padding px</p>
+                                    <p className="text-2xs text-muted-foreground">padding px</p>
                                     <Input type="number" min={0} max={100} value={padding} onChange={(e) => setPadding(parseInt(e.target.value) || 20)} className="text-xs h-8 text-center" />
                                 </div>
                             </div>

@@ -145,7 +145,7 @@ export function ImageRotate() {
                     <button
                         onClick={rotate90}
                         disabled={!hasImage}
-                        className="flex flex-col items-center gap-1 py-2.5 bg-muted/50 rounded-lg hover:bg-muted transition-colors min-h-[56px]"
+                        className="flex flex-col items-center gap-1 py-2.5 bg-muted/50 rounded-lg hover:bg-muted transition-colors min-h-touch-lg"
                     >
                         <ArrowClockwise className="w-5 h-5" />
                         <span className="text-xs">Rotate 90°</span>
@@ -153,7 +153,7 @@ export function ImageRotate() {
                     <button
                         onClick={() => setFlipH(!flipH)}
                         disabled={!hasImage}
-                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg transition-colors min-h-[56px] ${flipH ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg transition-colors min-h-touch-lg ${flipH ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"
                             }`}
                     >
                         <ArrowsHorizontal className="w-5 h-5" />
@@ -162,7 +162,7 @@ export function ImageRotate() {
                     <button
                         onClick={() => setFlipV(!flipV)}
                         disabled={!hasImage}
-                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg transition-colors min-h-[56px] ${flipV ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg transition-colors min-h-touch-lg ${flipV ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"
                             }`}
                     >
                         <ArrowsVertical className="w-5 h-5" />
@@ -194,7 +194,7 @@ export function ImageRotate() {
                     variant="outline"
                     onClick={clear}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     <Trash className="w-4 h-4" />
                     clear
@@ -202,7 +202,7 @@ export function ImageRotate() {
                 <Button
                     onClick={download}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     {downloaded ? "done!" : "download"}

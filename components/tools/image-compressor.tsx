@@ -145,7 +145,7 @@ export function ImageCompressor() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-zone-lg text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}
@@ -267,15 +267,15 @@ export function ImageCompressor() {
                         className="grid grid-cols-3 gap-2 text-center"
                     >
                         <div className="bg-muted/50 rounded-lg p-2">
-                            <p className="text-[10px] text-muted-foreground">original</p>
+                            <p className="text-2xs text-muted-foreground">original</p>
                             <p className="text-sm font-medium">{formatSize(stats.original)}</p>
                         </div>
                         <div className="bg-muted/50 rounded-lg p-2">
-                            <p className="text-[10px] text-muted-foreground">compressed</p>
+                            <p className="text-2xs text-muted-foreground">compressed</p>
                             <p className="text-sm font-medium">{formatSize(stats.compressed)}</p>
                         </div>
                         <div className="bg-primary/10 rounded-lg p-2">
-                            <p className="text-[10px] text-muted-foreground">saved</p>
+                            <p className="text-2xs text-muted-foreground">saved</p>
                             <p className="text-sm font-medium text-primary">
                                 {Math.round((1 - stats.compressed / stats.original) * 100)}%
                             </p>

@@ -118,7 +118,7 @@ export function ImageHost() {
                     {/* Dropzone */}
                     <div
                         onClick={() => fileRef.current?.click()}
-                        className={`relative min-h-[120px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer transition-colors ${image ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                        className={`relative min-h-zone-xl border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer transition-colors ${image ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                             }`}
                     >
                         <input

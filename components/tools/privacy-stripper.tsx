@@ -257,7 +257,7 @@ export function PrivacyStripper() {
                 onClick={() => inputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="border-2 border-dashed border-border rounded-xl p-4 min-h-[100px] text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
+                className="border-2 border-dashed border-border rounded-xl p-4 min-h-zone-lg text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center"
             >
                 <input
                     ref={inputRef}

@@ -85,7 +85,7 @@ export function FakeDataGen() {
                     <button
                         key={t.id}
                         onClick={() => { setDataType(t.id); }}
-                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-[32px] ${dataType === t.id
+                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-touch-sm ${dataType === t.id
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
@@ -100,7 +100,7 @@ export function FakeDataGen() {
                 {data.map((item, i) => (
                     <motion.div
                         key={`${item}-${i}`}
-                        className="flex items-center gap-2 p-2.5 bg-muted/30 rounded-lg group min-h-[44px]"
+                        className="flex items-center gap-2 p-2.5 bg-muted/30 rounded-lg group min-h-touch-md"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.03 }}
@@ -123,7 +123,7 @@ export function FakeDataGen() {
             {/* Generate button */}
             <motion.button
                 onClick={generate}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-lg flex items-center justify-center gap-2 text-sm font-medium min-h-[44px]"
+                className="w-full py-3 bg-primary text-primary-foreground rounded-lg flex items-center justify-center gap-2 text-sm font-medium min-h-touch-md"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
             >

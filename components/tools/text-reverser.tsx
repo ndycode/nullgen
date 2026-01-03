@@ -124,7 +124,7 @@ export function TextReverser() {
                             {copied ? "copied!" : "copy"}
                         </button>
                     </div>
-                    <div className="p-3 bg-muted/30 border rounded-lg min-h-[60px] text-sm break-all font-mono">
+                    <div className="p-3 bg-muted/30 border rounded-lg min-h-zone-sm text-sm break-all font-mono">
                         {output}
                     </div>
                 </motion.div>

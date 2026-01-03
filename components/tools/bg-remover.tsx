@@ -212,7 +212,7 @@ export function BackgroundRemover() {
                     variant="outline"
                     onClick={reset}
                     disabled={!hasImage}
-                    className="flex-1 gap-2 min-h-[44px]"
+                    className="flex-1 gap-2 min-h-touch-md"
                 >
                     <Trash className="w-4 h-4" />
                     Reset
@@ -220,7 +220,7 @@ export function BackgroundRemover() {
                 <Button
                     onClick={download}
                     disabled={!result}
-                    className="flex-1 gap-2 min-h-[44px]"
+                    className="flex-1 gap-2 min-h-touch-md"
                 >
                     <DownloadSimple className="w-4 h-4" />
                     Download

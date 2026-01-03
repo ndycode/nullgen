@@ -353,7 +353,7 @@ export function DeadDrop() {
                                     onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
                                     onDragLeave={() => setIsDragOver(false)}
                                     onDrop={handleDrop}
-                                    className={`relative min-h-[140px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer transition-colors ${file ? "border-primary bg-primary/5" : isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                                    className={`relative min-h-zone-2xl border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer transition-colors ${file ? "border-primary bg-primary/5" : isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                                 >
                                     <input type="file" onChange={handleFile} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     {file ? (() => {

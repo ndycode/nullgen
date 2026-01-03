@@ -140,7 +140,7 @@ export function ImageBlur() {
                     <button
                         onClick={() => setPixelate(false)}
                         disabled={!hasImage}
-                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors min-h-[44px] ${!pixelate ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors min-h-touch-md ${!pixelate ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                             }`}
                     >
                         Blur
@@ -148,7 +148,7 @@ export function ImageBlur() {
                     <button
                         onClick={() => setPixelate(true)}
                         disabled={!hasImage}
-                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors min-h-[44px] ${pixelate ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors min-h-touch-md ${pixelate ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                             }`}
                     >
                         Pixelate
@@ -179,7 +179,7 @@ export function ImageBlur() {
                     variant="outline"
                     onClick={clear}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     <Trash className="w-4 h-4" />
                     clear
@@ -187,7 +187,7 @@ export function ImageBlur() {
                 <Button
                     onClick={download}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     {downloaded ? "done!" : "download"}

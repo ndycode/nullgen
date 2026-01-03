@@ -142,7 +142,7 @@ export function ColorPaletteGen() {
                     <button
                         key={h.id}
                         onClick={() => handleHarmonyChange(h.id)}
-                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-[32px] ${harmony === h.id
+                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-touch-sm ${harmony === h.id
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
@@ -164,7 +164,7 @@ export function ColorPaletteGen() {
                         transition={{ duration: 0.2 }}
                     >
                         <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                            <span className="text-[10px] sm:text-xs font-mono text-white break-all px-1 text-center">{color}</span>
+                            <span className="text-2xs sm:text-xs font-mono text-white break-all px-1 text-center">{color}</span>
                         </div>
                         <button
                             onClick={(e) => { e.stopPropagation(); toggleLock(i); }}
@@ -180,7 +180,7 @@ export function ColorPaletteGen() {
             {/* Generate button */}
             <motion.button
                 onClick={generate}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-lg flex items-center justify-center gap-2 text-sm font-medium min-h-[44px]"
+                className="w-full py-3 bg-primary text-primary-foreground rounded-lg flex items-center justify-center gap-2 text-sm font-medium min-h-touch-md"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
             >

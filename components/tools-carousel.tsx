@@ -164,9 +164,9 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
 
             {/* Navigation hint with keyboard shortcuts */}
             <div className="flex flex-col items-center gap-2 mt-4 sm:mt-6">
-                <p className="text-[10px] text-muted-foreground/40">use dropdown below</p>
+                <p className="text-2xs text-muted-foreground/40">use dropdown below</p>
                 {/* Desktop keyboard hints */}
-                <div className="hidden sm:flex items-center gap-3 text-[9px] text-muted-foreground/30">
+                <div className="hidden sm:flex items-center gap-3 text-2xs text-muted-foreground/30">
                     <span className="flex items-center gap-1">
                         <kbd className="kbd">←</kbd>
                         <kbd className="kbd">→</kbd>
@@ -197,7 +197,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                         transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
                     >
                         {currentTool.name}
-                        <span className="text-[10px] text-muted-foreground/50 ml-1">({TOOLS.length})</span>
+                        <span className="text-2xs text-muted-foreground/50 ml-1">({TOOLS.length})</span>
                         <CaretDown className={`w-3 h-3 transition-transform ${showMenu ? "rotate-180" : ""}`} />
                     </motion.button>
 
@@ -225,7 +225,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Favorites Section */}
                                             {favorites.length > 0 && searchQuery === '' && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1 flex items-center gap-1">
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1 flex items-center gap-1">
                                                         <Heart weight="fill" className="w-2.5 h-2.5 text-primary" /> favorites
                                                     </p>
                                                     <div className="grid grid-cols-2 gap-1">
@@ -253,7 +253,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Recent Section */}
                                             {recent.length > 0 && searchQuery === '' && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">recent</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">recent</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {recent.slice(0, 6).map((toolId) => {
                                                             const tool = TOOLS.find(t => t.id === toolId);
@@ -286,7 +286,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Checker */}
                                             {TOOLS.filter(t => t.category === 'checker' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">checker</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">checker</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {TOOLS.filter(t => t.category === 'checker' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
                                                             const index = TOOLS.findIndex(t => t.id === tool.id);
@@ -312,7 +312,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Sharing */}
                                             {TOOLS.filter(t => t.category === 'sharing' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">sharing</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">sharing</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {TOOLS.filter(t => t.category === 'sharing' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
                                                             const index = TOOLS.findIndex(t => t.id === tool.id);
@@ -338,7 +338,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Generate */}
                                             {TOOLS.filter(t => t.category === 'generate' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">generate</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">generate</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {TOOLS.filter(t => t.category === 'generate' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
                                                             const index = TOOLS.findIndex(t => t.id === tool.id);
@@ -364,7 +364,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Text */}
                                             {TOOLS.filter(t => t.category === 'text' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">text</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">text</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {TOOLS.filter(t => t.category === 'text' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
                                                             const index = TOOLS.findIndex(t => t.id === tool.id);
@@ -390,7 +390,7 @@ export function ToolsCarousel({ children, initialIndex = 0, onBack }: ToolsCarou
                                             {/* Image */}
                                             {TOOLS.filter(t => t.category === 'image' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).length > 0 && (
                                                 <div>
-                                                    <p className="text-[10px] text-muted-foreground/50 uppercase px-1 mb-1">image</p>
+                                                    <p className="text-2xs text-muted-foreground/50 uppercase px-1 mb-1">image</p>
                                                     <div className="grid grid-cols-2 gap-1">
                                                         {TOOLS.filter(t => t.category === 'image' && (searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))).map((tool) => {
                                                             const index = TOOLS.findIndex(t => t.id === tool.id);

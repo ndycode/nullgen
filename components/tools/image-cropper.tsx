@@ -140,7 +140,7 @@ export function ImageCropper() {
                     onDragLeave={() => setIsDragOver(false)}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-[100px] cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                    className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 min-h-zone-lg cursor-pointer transition-colors ${isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                 >
                     <UploadSimple className="w-5 h-5 text-muted-foreground mb-1" />
                     <p className="text-xs text-muted-foreground">drop image or click to browse</p>

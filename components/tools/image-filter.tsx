@@ -149,7 +149,7 @@ export function ImageFilter() {
                             key={filter.id}
                             onClick={() => hasImage && setSelectedFilter(filter.id)}
                             disabled={!hasImage}
-                            className={`p-1.5 text-xs rounded-lg transition-colors min-h-[36px] ${selectedFilter === filter.id
+                            className={`p-1.5 text-xs rounded-lg transition-colors min-h-touch-xs ${selectedFilter === filter.id
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted/50 text-muted-foreground hover:bg-muted"
                                 }`}
@@ -166,7 +166,7 @@ export function ImageFilter() {
                     variant="outline"
                     onClick={clear}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     <ArrowClockwise className="w-4 h-4" />
                     reset
@@ -174,7 +174,7 @@ export function ImageFilter() {
                 <Button
                     onClick={download}
                     disabled={!hasImage}
-                    className="flex-1 gap-1.5 min-h-[44px]"
+                    className="flex-1 gap-1.5 min-h-touch-md"
                 >
                     {downloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     {downloaded ? "done!" : "download"}

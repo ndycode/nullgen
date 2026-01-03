@@ -77,7 +77,7 @@ export function CharacterMap() {
                     <button
                         key={cat.id}
                         onClick={() => { setCategory(cat.id); setSearch(""); }}
-                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-[32px] ${category === cat.id && !search
+                        className={`px-2.5 py-1.5 text-xs rounded-lg whitespace-nowrap transition-colors min-h-touch-sm ${category === cat.id && !search
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
@@ -93,7 +93,7 @@ export function CharacterMap() {
                     <motion.button
                         key={`${char}-${i}`}
                         onClick={() => copyChar(char)}
-                        className={`aspect-square flex items-center justify-center text-base sm:text-lg rounded-lg transition-all min-h-[40px] min-w-[40px] ${copied === char
+                        className={`aspect-square flex items-center justify-center text-base sm:text-lg rounded-lg transition-all min-h-zone-xs min-w-[40px] ${copied === char
                             ? "bg-primary text-primary-foreground scale-110"
                             : "bg-muted hover:bg-muted/80 hover:scale-105"
                             }`}

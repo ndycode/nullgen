@@ -78,7 +78,7 @@ export function PassGen() {
             {/* Password display */}
             <div
                 onClick={handleCopy}
-                className="relative bg-muted/50 rounded-xl p-4 min-h-[80px] flex items-center justify-center cursor-pointer hover:bg-muted/70 transition-colors"
+                className="relative bg-muted/50 rounded-xl p-4 min-h-zone-md flex items-center justify-center cursor-pointer hover:bg-muted/70 transition-colors"
             >
                 {password ? (
                     <motion.p
