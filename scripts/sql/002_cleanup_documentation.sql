@@ -1,0 +1,97 @@
+-- =============================================================================
+-- Cleanup Job Documentation
+-- =============================================================================
+--
+-- IMPORTANT: This application performs OPPORTUNISTIC cleanup only.
+-- Records are cleaned up when accessed after expiration, NOT on a schedule.
+--
+-- This means:
+-- - Expired files that are never accessed again will remain in the database
+-- - Orphaned R2 storage objects may accumulate
+-- - Table sizes will grow over time without scheduled cleanup
+--
+-- To enable automatic cleanup, choose one of the following options:
+--
+-- =============================================================================
+-- Option 1: pg_cron (Requires Supabase Pro or self-hosted Postgres with pg_cron)
+-- =============================================================================
+--
+-- Enable pg_cron extension:
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+--
+-- Schedule hourly cleanup job:
+-- SELECT cron.schedule(
+--     'cleanup-expired-files',
+--     '0 * * * *',  -- Every hour
+--     $$
+--     DELETE FROM file_metadata WHERE expires_at < NOW();
+--     DELETE FROM upload_sessions WHERE session_expires_at < NOW();
+--     DELETE FROM shares WHERE expires_at < NOW();
+--     DELETE FROM download_tokens WHERE expires_at < NOW();
+--     $$
+-- );
+--
+-- Note: R2 storage cleanup requires application-level coordination.
+-- Consider using R2 lifecycle rules for automatic object expiration.
+--
+-- =============================================================================
+-- Option 2: External Cron (Vercel Cron, GitHub Actions, etc.)
+-- =============================================================================
+--
+-- Create an API endpoint that runs cleanup and call it on a schedule:
+--
+-- POST /api/admin/cleanup
+-- - Requires admin authentication
+-- - Call via Vercel Cron, GitHub Actions, or external cron service
+--
+-- Example Vercel cron configuration (vercel.json):
+-- {
+--   "crons": [
+--     {
+--       "path": "/api/admin/cleanup",
+--       "schedule": "0 * * * *"
+--     }
+--   ]
+-- }
+--
+-- =============================================================================
+-- Option 3: R2 Lifecycle Rules (For storage cleanup only)
+-- =============================================================================
+--
+-- Configure R2 bucket lifecycle rules to automatically delete objects
+-- after a certain age. This handles orphaned storage objects but not
+-- database records.
+--
+-- See: https://developers.cloudflare.com/r2/buckets/object-lifecycles/
+--
+-- =============================================================================
+-- Monitoring
+-- =============================================================================
+--
+-- To monitor for data accumulation, periodically check:
+--
+-- SELECT 
+--     'file_metadata' as table_name,
+--     COUNT(*) as total_rows,
+--     COUNT(*) FILTER (WHERE expires_at < NOW()) as expired_rows
+-- FROM file_metadata
+-- UNION ALL
+-- SELECT 
+--     'upload_sessions',
+--     COUNT(*),
+--     COUNT(*) FILTER (WHERE session_expires_at < NOW())
+-- FROM upload_sessions
+-- UNION ALL
+-- SELECT 
+--     'shares',
+--     COUNT(*),
+--     COUNT(*) FILTER (WHERE expires_at < NOW())
+-- FROM shares
+-- UNION ALL
+-- SELECT 
+--     'download_tokens',
+--     COUNT(*),
+--     COUNT(*) FILTER (WHERE expires_at < NOW())
+-- FROM download_tokens;
+--
+-- =============================================================================

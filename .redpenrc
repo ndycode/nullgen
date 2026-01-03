@@ -1,0 +1,5 @@
+{
+  "platform": "web",
+  "frontend": "nextjs",
+  "backend": "none"
+}

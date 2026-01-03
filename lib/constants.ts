@@ -49,6 +49,12 @@ export const DEFAULT_MAX_DOWNLOADS = 1;
 /** Allowed max downloads values (-1 means unlimited) */
 export const ALLOWED_MAX_DOWNLOADS = [1, 5, 10, -1] as const;
 
+/** Upload session time-to-live in minutes */
+export const UPLOAD_SESSION_TTL_MINUTES = 15;
+
+/** Download token time-to-live in minutes */
+export const DOWNLOAD_TOKEN_TTL_MINUTES = 5;
+
 /** Rate limit window in milliseconds */
 export const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 

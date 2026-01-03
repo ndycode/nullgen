@@ -14,6 +14,19 @@ const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const USE_UPSTASH = Boolean(UPSTASH_URL && UPSTASH_TOKEN);
 
+// Log startup warning about rate limiter configuration
+if (!USE_UPSTASH && process.env.NODE_ENV !== "test") {
+    console.warn(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+        "⚠️  RATE LIMITER: Running in ephemeral in-memory mode\n" +
+        "   - Counters reset on server restart\n" +
+        "   - Does not work across server instances\n" +
+        "   - Production requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN\n" +
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    );
+}
+
+
 function getClientIp(request: NextRequest): string | null {
     const requestIp = (request as { ip?: string }).ip;
     if (requestIp) return requestIp;

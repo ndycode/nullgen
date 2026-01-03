@@ -85,8 +85,8 @@ export function useDownload() {
                 }),
             });
 
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                const data = await res.json();
                 setState(prev => ({
                     ...prev,
                     error: data.error || "Download failed",
@@ -95,16 +95,21 @@ export function useDownload() {
                 return false;
             }
 
-            // Trigger download
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = state.fileInfo.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            if (!data.downloadUrl) {
+                setState(prev => ({
+                    ...prev,
+                    error: "Download failed",
+                    status: "ready",
+                }));
+                return false;
+            }
+
+            const link = document.createElement("a");
+            link.href = data.downloadUrl as string;
+            link.download = state.fileInfo.name;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
 
             const { toast } = await import("sonner");
             toast.success("Download started!");

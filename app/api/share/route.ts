@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { r2Storage } from "@/lib/r2";
-import { ShareMetadata, CreateShareRequest, ShareType } from "@/lib/share-types";
+import { CreateShareRequest, ShareType } from "@/lib/share-types";
 import {
     SHARE_CODE_LENGTH,
     MAX_SHARE_TEXT_SIZE,
@@ -9,16 +8,26 @@ import {
     MAX_SHARE_EXPIRY_MINUTES,
 } from "@/lib/constants";
 import { hashPassword } from "@/lib/passwords";
+import { createShareContent, createShareRecord, deleteShareContent } from "@/lib/db";
+import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
 
-function jsonResponse(data: Record<string, unknown>, init: ResponseInit = {}) {
+function jsonResponse(
+    data: Record<string, unknown>,
+    init: ResponseInit = {},
+    timings?: Record<string, number>
+) {
+    const headers = {
+        ...NO_STORE_HEADERS,
+        ...(init.headers || {}),
+        ...(timings && Object.keys(timings).length > 0
+            ? { "Server-Timing": formatServerTiming(timings) }
+            : {}),
+    };
     return NextResponse.json(data, {
         ...init,
-        headers: {
-            ...NO_STORE_HEADERS,
-            ...(init.headers || {}),
-        },
+        headers,
     });
 }
 
@@ -49,12 +58,26 @@ function parseDataUrl(dataUrl: string): { mimeType: string; data: string } | nul
     return { mimeType: match[1], data: match[2] };
 }
 
+/**
+ * Calculate the actual byte length of base64-encoded data.
+ * Decodes a small sample to validate format, then calculates length.
+ * Returns 0 for invalid base64 to fail validation safely.
+ */
 function base64ByteLength(base64: string): number {
-    const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
-    return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+    if (!base64) return 0;
+
+    // Try to decode to verify it's valid base64 and get accurate size
+    try {
+        const buffer = Buffer.from(base64, "base64");
+        return buffer.length;
+    } catch {
+        // If decoding fails, return 0 to fail size validation
+        return 0;
+    }
 }
 
 export async function POST(request: NextRequest) {
+    const timings: Record<string, number> = {};
     try {
         const body: CreateShareRequest | null = await request.json().catch(() => null);
         if (!body || typeof body !== "object") {
@@ -68,7 +91,7 @@ export async function POST(request: NextRequest) {
             burnAfterReading,
             language,
             originalName,
-            mimeType
+            mimeType,
         } = body;
 
         if (typeof content !== "string" || typeof type !== "string") {
@@ -85,21 +108,16 @@ export async function POST(request: NextRequest) {
             return jsonResponse({ error: "Content and type required" }, { status: 400 });
         }
 
-        // Validate type
-        const validTypes: ShareType[] = ['link', 'paste', 'image', 'note', 'code', 'json', 'csv'];
+        const validTypes: ShareType[] = ["link", "paste", "image", "note", "code", "json", "csv"];
         if (!validTypes.includes(type)) {
             return jsonResponse({ error: "Invalid share type" }, { status: 400 });
         }
 
-        // For links, validate URL
-        if (type === 'link') {
-            if (!isValidUrl(normalizedContent)) {
-                return jsonResponse({ error: "Invalid URL" }, { status: 400 });
-            }
+        if (type === "link" && !isValidUrl(normalizedContent)) {
+            return jsonResponse({ error: "Invalid URL" }, { status: 400 });
         }
 
-        // For JSON, validate
-        if (type === 'json') {
+        if (type === "json") {
             try {
                 JSON.parse(normalizedContent);
             } catch {
@@ -107,8 +125,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Check content size (max 1MB for text content)
-        if (type !== 'image' && normalizedContent.length > MAX_SHARE_TEXT_SIZE) {
+        if (type !== "image" && normalizedContent.length > MAX_SHARE_TEXT_SIZE) {
             return jsonResponse({ error: "Content too large (max 1MB)" }, { status: 400 });
         }
 
@@ -129,40 +146,54 @@ export async function POST(request: NextRequest) {
             imageMimeType = parsed.mimeType;
         }
 
-        if (!r2Storage.isConfigured()) {
-            return jsonResponse({ error: "Storage not configured" }, { status: 500 });
-        }
-
-        // Generate unique code
-        let code = generateCode();
-        let attempts = 0;
-        while (await r2Storage.getShareMetadata(code) && attempts < 10) {
-            code = generateCode();
-            attempts++;
-        }
-
         const parsedExpiry = Number.isFinite(Number(expiryMinutes))
             ? Number(expiryMinutes)
             : 60;
         const safeExpiryMinutes = Math.min(Math.max(parsedExpiry, 1), MAX_SHARE_EXPIRY_MINUTES);
         const expiresAt = new Date(Date.now() + safeExpiryMinutes * 60 * 1000);
+        const passwordHash = normalizedPassword
+            ? await withTiming(timings, "crypto", () => hashPassword(normalizedPassword))
+            : null;
 
-        const metadata: ShareMetadata = {
-            type,
-            content: normalizedContent,
-            originalName,
-            mimeType: imageMimeType,
-            size: imageSize || undefined,
-            language,
-            expiresAt: expiresAt.toISOString(),
-            password: normalizedPassword ? hashPassword(normalizedPassword) : null,
-            burnAfterReading: normalizedBurn,
-            viewCount: 0,
-            burned: false,
-            createdAt: new Date().toISOString(),
-        };
+        const contentRecord = await withTiming(timings, "db", () =>
+            createShareContent(normalizedContent)
+        );
 
-        await r2Storage.saveShareMetadata(code, metadata);
+        let code = generateCode();
+        let attempts = 0;
+        let reserved = false;
+
+        while (attempts < 10) {
+            const candidate = await withTiming(timings, "db", () =>
+                createShareRecord({
+                    code,
+                    type,
+                    content_id: contentRecord.id,
+                    original_name: originalName ?? null,
+                    mime_type: imageMimeType ?? null,
+                    size: imageSize ? imageSize : null,
+                    language: language ?? null,
+                    expires_at: expiresAt.toISOString(),
+                    password_hash: passwordHash,
+                    burn_after_reading: normalizedBurn,
+                    view_count: 0,
+                    burned: false,
+                })
+            );
+
+            if (candidate) {
+                reserved = true;
+                break;
+            }
+
+            code = generateCode();
+            attempts += 1;
+        }
+
+        if (!reserved) {
+            await withTiming(timings, "db", () => deleteShareContent(contentRecord.id));
+            return jsonResponse({ error: "Failed to generate unique code" }, { status: 500 }, timings);
+        }
 
         const baseUrl = request.nextUrl.origin;
         const url = `${baseUrl}/s/${code}`;
@@ -171,10 +202,10 @@ export async function POST(request: NextRequest) {
             code,
             url,
             expiresAt: expiresAt.toISOString(),
-        });
+        }, undefined, timings);
     } catch (error) {
         console.error("Share creation error:", error);
         const errorMessage = error instanceof Error ? error.message : "Failed to create share";
-        return jsonResponse({ error: errorMessage }, { status: 500 });
+        return jsonResponse({ error: errorMessage }, { status: 500 }, timings);
     }
 }

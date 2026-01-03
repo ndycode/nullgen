@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { r2Storage } from "@/lib/r2";
-import { ShareMetadata } from "@/lib/share-types";
-import { StorageError, ValidationError, formatErrorResponse } from "@/lib/errors";
+import { getShareWithContentByCode, updateShareViewCount, type ShareWithContentRecord } from "@/lib/db";
+import { ValidationError, formatErrorResponse } from "@/lib/errors";
 import { verifyPassword } from "@/lib/passwords";
 import { SHARE_CODE_LENGTH } from "@/lib/constants";
+import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
 
-function jsonResponse(data: Record<string, unknown>, init: ResponseInit = {}) {
+function jsonResponse(
+    data: Record<string, unknown>,
+    init: ResponseInit = {},
+    timings?: Record<string, number>
+) {
+    const headers = {
+        ...NO_STORE_HEADERS,
+        ...(init.headers || {}),
+        ...(timings && Object.keys(timings).length > 0
+            ? { "Server-Timing": formatServerTiming(timings) }
+            : {}),
+    };
+
     return NextResponse.json(data, {
         ...init,
-        headers: {
-            ...NO_STORE_HEADERS,
-            ...(init.headers || {}),
-        },
+        headers,
     });
 }
 
@@ -21,131 +30,88 @@ function isValidCode(code: string): boolean {
     return code.length === SHARE_CODE_LENGTH && /^[a-z0-9]+$/.test(code);
 }
 
-function normalizeMetadata(raw: unknown): ShareMetadata {
-    if (!raw || typeof raw !== "object") {
-        throw new StorageError("Invalid share metadata");
-    }
-    const data = raw as Partial<ShareMetadata>;
-
-    const content = typeof data.content === "string" ? data.content : "";
-    const type = typeof data.type === "string" ? data.type : "";
-    const expiresAtRaw = (data as { expiresAt?: unknown }).expiresAt;
-    const expiresAt = expiresAtRaw instanceof Date
-        ? expiresAtRaw.toISOString()
-        : typeof expiresAtRaw === "string"
-            ? expiresAtRaw
-            : "";
-    const createdAtRaw = (data as { createdAt?: unknown }).createdAt;
-    const createdAt = createdAtRaw instanceof Date
-        ? createdAtRaw.toISOString()
-        : typeof createdAtRaw === "string"
-            ? createdAtRaw
-            : "";
-    const viewCount = typeof data.viewCount === "number" && Number.isFinite(data.viewCount)
-        ? data.viewCount
-        : 0;
-
-    if (!content || !type || !expiresAt) {
-        throw new StorageError("Invalid share metadata", 500);
-    }
-
-    if (viewCount < 0) {
-        throw new StorageError("Invalid view count", 500);
-    }
-
-    const expiresDate = new Date(expiresAt);
-    if (Number.isNaN(expiresDate.getTime())) {
-        throw new StorageError("Invalid expiry", 500);
-    }
-
+function normalizeShare(record: ShareWithContentRecord) {
     return {
-        type: data.type as ShareMetadata["type"],
-        content,
-        originalName: typeof data.originalName === "string" ? data.originalName : undefined,
-        mimeType: typeof data.mimeType === "string" ? data.mimeType : undefined,
-        size: typeof data.size === "number" ? data.size : undefined,
-        language: typeof data.language === "string" ? data.language : undefined,
-        expiresAt,
-        password: typeof data.password === "string" ? data.password : null,
-        burnAfterReading: Boolean(data.burnAfterReading),
-        viewCount,
-        burned: Boolean(data.burned),
-        createdAt: createdAt || new Date().toISOString(),
+        type: record.type,
+        content: record.content?.content || "",
+        originalName: record.original_name || undefined,
+        mimeType: record.mime_type || undefined,
+        size: record.size || undefined,
+        language: record.language || undefined,
+        expiresAt: record.expires_at,
+        passwordHash: record.password_hash,
+        burnAfterReading: record.burn_after_reading,
+        viewCount: record.view_count,
+        burned: record.burned,
+        createdAt: record.created_at,
     };
-}
-
-async function cleanupExpired(code: string): Promise<void> {
-    try {
-        await r2Storage.deleteShareMetadata(code);
-    } catch (error) {
-        console.error("Error deleting expired share:", error);
-    }
 }
 
 async function processShare(
     code: string,
-    providedPassword: string | null
-): Promise<ShareMetadata | Response> {
+    providedPassword: string | null,
+    timings: Record<string, number>
+): Promise<ReturnType<typeof normalizeShare> | Response> {
     const maxAttempts = 3;
     let attempt = 0;
 
     while (attempt < maxAttempts) {
-        const record = await r2Storage.getShareMetadataWithEtag(code);
+        const record = await withTiming(timings, "db", () => getShareWithContentByCode(code));
         if (!record) {
-            return jsonResponse({ error: "Share not found" }, { status: 404 });
+            return jsonResponse({ error: "Share not found" }, { status: 404 }, timings);
         }
 
-        const metadata = normalizeMetadata(record.metadata);
-        const expiresAt = new Date(metadata.expiresAt);
+        const normalized = normalizeShare(record);
+        const expiresAt = new Date(normalized.expiresAt);
 
         if (new Date(expiresAt) < new Date()) {
-            await cleanupExpired(code);
-            return jsonResponse({ error: "Share has expired" }, { status: 410 });
+            return jsonResponse({ error: "Share has expired" }, { status: 410 }, timings);
         }
 
-        if (metadata.burned) {
-            return jsonResponse({ error: "This share has been destroyed" }, { status: 410 });
+        if (normalized.burned) {
+            return jsonResponse({ error: "This share has been destroyed" }, { status: 410 }, timings);
         }
 
-        if (metadata.password) {
+        if (normalized.passwordHash) {
             if (!providedPassword) {
                 return jsonResponse({
                     error: "Password required",
                     requiresPassword: true,
-                    type: metadata.type,
-                    burnAfterReading: metadata.burnAfterReading,
-                }, { status: 401 });
+                    type: normalized.type,
+                    burnAfterReading: normalized.burnAfterReading,
+                }, { status: 401 }, timings);
             }
-            if (!verifyPassword(providedPassword, metadata.password)) {
-                return jsonResponse({ error: "Incorrect password" }, { status: 403 });
+            const storedHash = normalized.passwordHash;
+            const passwordValid = await withTiming(timings, "crypto", () =>
+                verifyPassword(providedPassword, storedHash)
+            );
+            if (!passwordValid) {
+                return jsonResponse({ error: "Incorrect password" }, { status: 403 }, timings);
             }
         }
 
-        const updated: ShareMetadata = {
-            ...metadata,
-            viewCount: metadata.viewCount + 1,
-            burned: metadata.burned || metadata.burnAfterReading,
-        };
-
-        try {
-            await r2Storage.saveShareMetadata(code, updated, { ifMatch: record.etag });
-            return updated;
-        } catch (err) {
-            if (err instanceof StorageError && err.statusCode === 409) {
-                attempt++;
-                continue;
-            }
-            throw err;
+        const updated = await withTiming(timings, "db", () =>
+            updateShareViewCount(record.id, normalized.viewCount, normalized.burnAfterReading)
+        );
+        if (updated) {
+            return {
+                ...normalized,
+                viewCount: updated.view_count,
+                burned: updated.burned,
+            };
         }
+
+        attempt += 1;
     }
 
-    return jsonResponse({ error: "Share busy, retry" }, { status: 409 });
+    return jsonResponse({ error: "Share busy, retry" }, { status: 409 }, timings);
 }
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
 ) {
+    const timings: Record<string, number> = {};
     try {
         const { code } = await params;
         const normalizedCode = code?.toLowerCase() || "";
@@ -153,11 +119,7 @@ export async function GET(
             throw new ValidationError("Invalid share code", "code");
         }
 
-        if (!r2Storage.isConfigured()) {
-            return jsonResponse({ error: "Storage not configured" }, { status: 500 });
-        }
-
-        const result = await processShare(normalizedCode, null);
+        const result = await processShare(normalizedCode, null, timings);
         if (result instanceof Response) {
             return result;
         }
@@ -171,12 +133,12 @@ export async function GET(
             expiresAt: result.expiresAt,
             burnAfterReading: result.burnAfterReading,
             burned: result.burned,
-            requiresPassword: !!result.password,
-        });
+            requiresPassword: !!result.passwordHash,
+        }, undefined, timings);
     } catch (error) {
         console.error("Share retrieval error:", error);
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
-        return jsonResponse({ error: errorMessage }, { status: statusCode });
+        return jsonResponse({ error: errorMessage }, { status: statusCode }, timings);
     }
 }
 
@@ -184,6 +146,7 @@ export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
 ) {
+    const timings: Record<string, number> = {};
     try {
         const { code } = await params;
         const normalizedCode = code?.toLowerCase() || "";
@@ -191,14 +154,10 @@ export async function POST(
             throw new ValidationError("Invalid share code", "code");
         }
 
-        if (!r2Storage.isConfigured()) {
-            return jsonResponse({ error: "Storage not configured" }, { status: 500 });
-        }
-
         const body = await request.json().catch(() => ({}));
         const providedPassword = typeof body.password === "string" ? body.password : null;
 
-        const result = await processShare(normalizedCode, providedPassword);
+        const result = await processShare(normalizedCode, providedPassword, timings);
         if (result instanceof Response) {
             return result;
         }
@@ -212,11 +171,11 @@ export async function POST(
             expiresAt: result.expiresAt,
             burnAfterReading: result.burnAfterReading,
             burned: result.burned,
-            requiresPassword: !!result.password,
-        });
+            requiresPassword: !!result.passwordHash,
+        }, undefined, timings);
     } catch (error) {
         console.error("Share retrieval error:", error);
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
-        return jsonResponse({ error: errorMessage }, { status: statusCode });
+        return jsonResponse({ error: errorMessage }, { status: statusCode }, timings);
     }
 }

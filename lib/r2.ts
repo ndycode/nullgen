@@ -4,11 +4,20 @@ import {
     GetObjectCommand,
     DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Readable } from "stream";
 import { logger } from "./logger";
 import { StorageError } from "./errors";
 import type { FileMetadata } from "@/types";
 import type { ShareMetadata } from "./share-types";
+
+/**
+ * Result of a delete operation
+ */
+export interface DeleteResult {
+    success: boolean;
+    error?: string;
+}
 
 /**
  * Cloudflare R2 Storage Service
@@ -119,6 +128,32 @@ class R2StorageService {
             throw new StorageError(
                 error instanceof Error ? error.message : "Download failed"
             );
+        }
+    }
+
+    /**
+     * Generate a signed upload URL for direct client uploads
+     */
+    async getSignedUploadUrl(
+        key: string,
+        mimeType: string,
+        expiresInSeconds = 300
+    ): Promise<string> {
+        if (!this.client || !this.bucketName) {
+            throw new StorageError("R2 storage not configured");
+        }
+
+        try {
+            const command = new PutObjectCommand({
+                Bucket: this.bucketName,
+                Key: key,
+                ContentType: mimeType,
+            });
+
+            return await getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
+        } catch (error) {
+            logger.exception("Failed to sign upload URL", error, { key });
+            throw new StorageError("Failed to generate upload URL");
         }
     }
 
@@ -243,10 +278,14 @@ class R2StorageService {
     }
 
     /**
-     * Delete a file from R2
+     * Delete a file from R2.
+     * IMPORTANT: Returns a result object - callers MUST check success.
+     * Does NOT throw on failure to allow graceful degradation.
      */
-    async deleteFile(key: string): Promise<void> {
-        if (!this.client || !this.bucketName) return;
+    async deleteFile(key: string): Promise<DeleteResult> {
+        if (!this.client || !this.bucketName) {
+            return { success: false, error: "R2 storage not configured" };
+        }
 
         try {
             await this.client.send(
@@ -256,8 +295,22 @@ class R2StorageService {
                 })
             );
             logger.debug("Deleted from R2", { key });
+            return { success: true };
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
             logger.exception("Failed to delete from R2", error, { key });
+            return { success: false, error: errorMessage };
+        }
+    }
+
+    /**
+     * Delete a file from R2, throwing on failure.
+     * Use when deletion failure should abort the operation.
+     */
+    async deleteFileOrThrow(key: string): Promise<void> {
+        const result = await this.deleteFile(key);
+        if (!result.success) {
+            throw new StorageError(`Failed to delete file: ${result.error}`);
         }
     }
 
@@ -309,8 +362,8 @@ class R2StorageService {
     /**
      * Delete share metadata
      */
-    async deleteShareMetadata(code: string): Promise<void> {
-        await this.deleteFile(`share-${code}.json`);
+    async deleteShareMetadata(code: string): Promise<DeleteResult> {
+        return this.deleteFile(`share-${code}.json`);
     }
 
     private isNotFoundError(error: unknown): boolean {

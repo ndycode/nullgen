@@ -113,54 +113,86 @@ export function DeadDrop() {
         setProgress(0);
         setUploadError("");
 
-        const formData = new FormData();
-        formData.append("files", file);
-        formData.append("expiryMinutes", EXPIRY_MINUTES[expiry].toString());
-        formData.append("maxDownloads", LIMITS_VALUES[limit].toString());
-        if (password) formData.append("password", password);
+        const mimeType = file.type || "application/octet-stream";
 
-        const xhr = new XMLHttpRequest();
+        try {
+            const initRes = await fetch("/api/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    filename: file.name,
+                    size: file.size,
+                    mimeType,
+                    expiryMinutes: EXPIRY_MINUTES[expiry],
+                    maxDownloads: LIMITS_VALUES[limit],
+                    password: password || undefined,
+                }),
+            });
 
-        xhr.upload.addEventListener("progress", (e) => {
-            if (e.lengthComputable) {
-                setProgress(Math.round((e.loaded / e.total) * 100));
-            }
-        });
-
-        xhr.addEventListener("load", async () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    setShareCode(data.code);
-                    setUploadStatus("done");
-                    confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: CONFETTI_COLORS,
-                    });
-                } catch {
-                    setUploadError("Invalid response");
-                    setUploadStatus("idle");
-                }
-            } else {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    setUploadError(data.error || "Upload failed");
-                } catch {
-                    setUploadError("Upload failed");
-                }
+            const initData = await initRes.json().catch(() => ({}));
+            if (!initRes.ok) {
+                setUploadError(initData.error || "Upload failed");
                 setUploadStatus("idle");
+                return;
             }
-        });
 
-        xhr.addEventListener("error", () => {
-            setUploadError("Network error");
+            const uploadUrl = typeof initData.uploadUrl === "string" ? initData.uploadUrl : "";
+            const code = typeof initData.code === "string" ? initData.code : "";
+            if (!uploadUrl || !code) {
+                setUploadError("Upload initialization failed");
+                setUploadStatus("idle");
+                return;
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener("progress", (e) => {
+                    if (e.lengthComputable) {
+                        setProgress(Math.round((e.loaded / e.total) * 100));
+                    }
+                });
+
+                xhr.addEventListener("load", () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        setProgress(100);
+                        resolve();
+                        return;
+                    }
+                    reject(new Error("Upload failed"));
+                });
+
+                xhr.addEventListener("error", () => reject(new Error("Upload failed")));
+
+                xhr.open("PUT", uploadUrl);
+                xhr.setRequestHeader("Content-Type", mimeType);
+                xhr.send(file);
+            });
+
+            const finalizeRes = await fetch("/api/upload/complete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
+            });
+            const finalizeData = await finalizeRes.json().catch(() => ({}));
+            if (!finalizeRes.ok) {
+                setUploadError(finalizeData.error || "Upload failed");
+                setUploadStatus("idle");
+                return;
+            }
+
+            setShareCode(finalizeData.code || code);
+            setUploadStatus("done");
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: CONFETTI_COLORS,
+            });
+        } catch {
+            setUploadError("Upload failed");
             setUploadStatus("idle");
-        });
-
-        xhr.open("POST", "/api/upload");
-        xhr.send(formData);
+        }
     };
 
     const reset = () => {
@@ -210,23 +242,25 @@ export function DeadDrop() {
                 }),
             });
 
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                const data = await res.json();
                 setError(data.error || "Download failed");
                 setDownloadStatus("ready");
                 return;
             }
 
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileInfo.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            if (!data.downloadUrl) {
+                setError("Download failed");
+                setDownloadStatus("ready");
+                return;
+            }
 
+            const link = document.createElement("a");
+            link.href = data.downloadUrl as string;
+            link.download = fileInfo.name;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
             resetDownload();
         } catch {
             setError("Download failed");

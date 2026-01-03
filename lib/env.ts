@@ -12,6 +12,9 @@ interface EnvConfig {
     R2_SECRET_ACCESS_KEY: string;
     R2_BUCKET_NAME: string;
     R2_PUBLIC_URL?: string;
+    // Supabase
+    SUPABASE_URL: string;
+    SUPABASE_SERVICE_ROLE_KEY: string;
     // Rate limiting (Upstash)
     UPSTASH_REDIS_REST_URL?: string;
     UPSTASH_REDIS_REST_TOKEN?: string;
@@ -36,6 +39,8 @@ function validateEnv(): EnvValidation {
         "R2_ACCESS_KEY_ID",
         "R2_SECRET_ACCESS_KEY",
         "R2_BUCKET_NAME",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
     ];
 
     const optional = [
@@ -69,26 +74,44 @@ function validateEnv(): EnvValidation {
 
 /**
  * Get typed environment configuration
- * Logs warnings for missing optional vars, throws for missing required vars in production
+ * Fails loudly on missing required vars in ALL environments.
+ * Set ENV_VALIDATION_STRICT=false to allow partial env for testing.
  */
 function getEnvConfig(): EnvConfig {
     const validation = validateEnv();
+    const strictValidation = process.env.ENV_VALIDATION_STRICT !== "false";
 
-    // Log warnings
+    // Log warnings for optional vars
     for (const warning of validation.warnings) {
         logger.debug(warning);
     }
 
-    // In production, require all mandatory variables
-    if (!validation.isValid && process.env.NODE_ENV === "production") {
-        const errorMsg = `Missing required environment variables: ${validation.missing.join(", ")}`;
+    // Fail loudly on missing required vars (default behavior)
+    // Skip during build phase to allow 'next build' to complete
+    const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+    if (!validation.isValid && strictValidation && !isBuildPhase) {
+        const missingList = validation.missing
+            .map((v) => `  - ${v}`)
+            .join("\n");
+        const errorMsg = [
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "FATAL: Missing required environment variables:",
+            missingList,
+            "",
+            "To fix: Copy .env.example to .env.local and fill in values.",
+            "To skip (testing only): Set ENV_VALIDATION_STRICT=false",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        ].join("\n");
         logger.error(errorMsg);
-        throw new Error(errorMsg);
+        throw new Error(`Missing required environment variables: ${validation.missing.join(", ")}`);
     }
 
-    // In development, just warn
+    // Warn-only mode for intentional partial-env testing
     if (!validation.isValid) {
-        logger.warn(`Missing environment variables: ${validation.missing.join(", ")}. Some features may not work.`);
+        logger.warn(
+            `ENV_VALIDATION_STRICT=false: Running with missing vars: ${validation.missing.join(", ")}. ` +
+            "Storage and database operations will fail."
+        );
     }
 
     return {
@@ -97,6 +120,8 @@ function getEnvConfig(): EnvConfig {
         R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || "",
         R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || "",
         R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
+        SUPABASE_URL: process.env.SUPABASE_URL || "",
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
         UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
         UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
         NODE_ENV: (process.env.NODE_ENV as EnvConfig["NODE_ENV"]) || "development",

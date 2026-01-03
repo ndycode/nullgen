@@ -12,9 +12,11 @@ import {
     MAX_EXPIRY_MINUTES,
     ALLOWED_MIME_TYPES,
     ALLOWED_MAX_DOWNLOADS,
+    UPLOAD_SESSION_TTL_MINUTES,
 } from "@/lib/constants";
 import { hashPassword } from "@/lib/passwords";
-import type { FileMetadata } from "@/types";
+import { reserveUploadSession, type UploadSessionRecord } from "@/lib/db";
+import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
 
@@ -27,6 +29,14 @@ function generateCode(): string {
     return code;
 }
 
+/**
+ * Check if MIME type is in the allowed list.
+ * 
+ * SECURITY NOTE: This validates the *declared* MIME type from the client request,
+ * NOT the actual file contents. Clients can lie about MIME types.
+ * This is a first-line defense; for sensitive applications, also verify
+ * file magic numbers/headers after upload.
+ */
 function isAllowedMimeType(mimeType: string): boolean {
     if (!mimeType) return false;
     return ALLOWED_MIME_TYPES.some((allowed) => {
@@ -40,21 +50,49 @@ function isAllowedMimeType(mimeType: string): boolean {
 // Sanitize filename to prevent path traversal
 function sanitizeFilename(filename: string): string {
     return filename
-        .replace(/[/\\]/g, "_") // Replace slashes
-        .replace(/\.\./g, "_") // Prevent path traversal
-        .replace(/[<>:"|?*]/g, "_") // Remove invalid chars
-        .slice(0, 255); // Limit length
+        .replace(/[/\\]/g, "_")
+        .replace(/\.\./g, "_")
+        .replace(/[<>:"|?*]/g, "_")
+        .slice(0, 255);
 }
 
 export async function POST(request: NextRequest) {
     const requestId = crypto.randomUUID().slice(0, 8);
+    const timings: Record<string, number> = {};
 
     try {
-        const formData = await request.formData();
-        const files = formData.getAll("files") as File[];
-        const expiryRaw = Number.parseInt(formData.get("expiryMinutes") as string, 10);
-        const maxDownloadsRaw = Number.parseInt(formData.get("maxDownloads") as string, 10);
-        const password = (formData.get("password") as string | null)?.trim() || null;
+        const body = await request.json().catch(() => ({}));
+        const rawName = typeof body.filename === "string" ? body.filename : "";
+        const rawSize = Number(body.size);
+        const rawMime = typeof body.mimeType === "string" ? body.mimeType : "";
+        const expiryRaw = Number.parseInt(body.expiryMinutes as string, 10);
+        const maxDownloadsRaw = Number.parseInt(body.maxDownloads as string, 10);
+        const password = typeof body.password === "string" ? body.password.trim() : "";
+
+        if (!rawName) {
+            throw new ValidationError("Invalid file name", "files");
+        }
+        if (!Number.isFinite(rawSize) || rawSize <= 0) {
+            throw new ValidationError("Invalid file size", "files");
+        }
+        if (rawSize > MAX_FILE_SIZE) {
+            throw new ValidationError(
+                `File size exceeds ${Math.round(MAX_FILE_SIZE / 1024 / 1024)} MB limit`,
+                "files"
+            );
+        }
+        if (rawSize > MAX_UPLOAD_SIZE) {
+            throw new ValidationError(
+                `Total file size exceeds ${Math.round(MAX_UPLOAD_SIZE / 1024 / 1024)} MB limit`,
+                "files"
+            );
+        }
+
+        const mimeType = rawMime || "application/octet-stream";
+        if (!isAllowedMimeType(mimeType)) {
+            throw new ValidationError("File type is not allowed", "files");
+        }
+
         const expiryMinutes = Number.isFinite(expiryRaw)
             ? Math.min(Math.max(expiryRaw, 1), MAX_EXPIRY_MINUTES)
             : DEFAULT_EXPIRY_MINUTES;
@@ -62,111 +100,77 @@ export async function POST(request: NextRequest) {
             ? maxDownloadsRaw
             : DEFAULT_MAX_DOWNLOADS;
 
-        // Validation
-        if (files.length === 0) {
-            throw new ValidationError("No files provided", "files");
-        }
-        if (files.length !== 1) {
-            throw new ValidationError("Only one file per upload is supported", "files");
-        }
-
-        const file = files[0];
-        if (!file.name) {
-            throw new ValidationError("Invalid file name", "files");
-        }
-        if (file.size > MAX_FILE_SIZE) {
-            throw new ValidationError(
-                `File size exceeds ${Math.round(MAX_FILE_SIZE / 1024 / 1024)} MB limit`,
-                "files"
-            );
-        }
-
-        const totalSize = file.size;
-        if (totalSize > MAX_UPLOAD_SIZE) {
-            throw new ValidationError(
-                `Total file size exceeds ${Math.round(MAX_UPLOAD_SIZE / 1024 / 1024)} MB limit`,
-                "files"
-            );
-        }
-
-        const mimeType = file.type || "application/octet-stream";
-        if (!isAllowedMimeType(mimeType)) {
-            throw new ValidationError("File type is not allowed", "files");
-        }
-
-        // Check storage availability
         if (!r2Storage.isConfigured()) {
             throw new StorageError("Storage not configured");
         }
 
-        // Generate unique code
+        const sanitizedName = sanitizeFilename(rawName) || "upload.bin";
+        const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+        const sessionExpiresAt = new Date(Date.now() + UPLOAD_SESSION_TTL_MINUTES * 60 * 1000);
+        const passwordHash = password
+            ? await withTiming(timings, "crypto", () => hashPassword(password))
+            : null;
+
         let code = generateCode();
         let attempts = 0;
-        while (await r2Storage.getMetadata(code) && attempts < 10) {
+        let session: UploadSessionRecord | null = null;
+
+        while (attempts < 10) {
+            const randomSuffix = crypto.randomBytes(4).toString("hex");
+            const key = `${code}-${randomSuffix}-${sanitizedName}`;
+            const candidate: UploadSessionRecord = {
+                code,
+                storage_key: key,
+                original_name: sanitizedName,
+                size: rawSize,
+                mime_type: mimeType,
+                expires_at: expiresAt.toISOString(),
+                max_downloads: maxDownloads,
+                password_hash: passwordHash,
+                session_expires_at: sessionExpiresAt.toISOString(),
+            };
+
+            const reserved = await withTiming(timings, "db", () => reserveUploadSession(candidate));
+            if (reserved) {
+                session = candidate;
+                break;
+            }
+
             code = generateCode();
-            attempts++;
+            attempts += 1;
         }
-        if (attempts >= 10) {
+
+        if (!session) {
             throw new StorageError("Failed to generate unique code");
         }
 
-        // Determine file name and prepare buffer
-        let fileName = sanitizeFilename(file.name);
-        if (!fileName) {
-            fileName = "upload.bin";
-        }
+        const uploadUrl = await withTiming(timings, "r2", () =>
+            r2Storage.getSignedUploadUrl(session.storage_key, mimeType)
+        );
 
-        // Calculate expiry
-        const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
-
-        logger.info("Starting file upload", {
+        logger.info("Upload session created", {
             requestId,
-            fileCount: files.length,
-            totalSize,
-            expiryMinutes,
+            code: session.code,
+            size: rawSize,
+            expiresAt: session.expires_at,
         });
 
-        try {
-            // Use code + random + filename to avoid collisions
-            const randomSuffix = crypto.randomBytes(4).toString("hex");
-            const key = `${code}-${randomSuffix}-${fileName}`;
+        const headers = {
+            ...NO_STORE_HEADERS,
+            ...(Object.keys(timings).length > 0 ? { "Server-Timing": formatServerTiming(timings) } : {}),
+        };
 
-            // 1. Upload Content
-            await r2Storage.uploadFile(file.stream(), key, mimeType, { size: totalSize });
-
-            logger.debug("File uploaded to R2", { requestId, key });
-
-            // 2. Upload Metadata
-            const metadata: FileMetadata = {
+        return NextResponse.json(
+            {
+                code: session.code,
+                uploadUrl,
+                expiresAt: session.expires_at,
                 storageType: "r2",
-                filename: key,
-                originalName: fileName,
-                size: totalSize,
-                mimeType,
-                expiresAt: expiresAt.toISOString(),
-                maxDownloads,
-                downloadCount: 0,
-                password: password ? hashPassword(password) : null,
-                downloaded: false,
-            };
-
-            await r2Storage.saveMetadata(code, metadata);
-
-            logger.info("Upload complete", { requestId, code });
-
-            return NextResponse.json({
-                code,
-                expiresAt: expiresAt.toISOString(),
-                storageType: "r2",
-            }, { headers: NO_STORE_HEADERS });
-        } catch (error) {
-            logger.exception("R2 upload failed", error, { requestId });
-            throw new StorageError(
-                error instanceof Error ? error.message : "Upload failed"
-            );
-        }
+            },
+            { headers }
+        );
     } catch (error) {
-        logger.exception("Upload error", error, { requestId });
+        logger.exception("Upload init error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
         return NextResponse.json(
             { error: errorMessage },

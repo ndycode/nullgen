@@ -1,208 +1,99 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ToolsCarousel } from "@/components/tools-carousel";
-// Checker tools
-import { IpChecker } from "@/components/tools/ip-checker";
-import { DnsChecker } from "@/components/tools/dns-checker";
-import { WhoisChecker } from "@/components/tools/whois-checker";
-import { SslChecker } from "@/components/tools/ssl-checker";
-import { PingChecker } from "@/components/tools/ping-checker";
-import { UserAgentChecker } from "@/components/tools/useragent-checker";
-import { ScreenChecker } from "@/components/tools/screen-checker";
-import { CookiesChecker } from "@/components/tools/cookies-checker";
-import { WebGLChecker } from "@/components/tools/webgl-checker";
-import { PasswordChecker } from "@/components/tools/password-checker";
-import { LeakChecker } from "@/components/tools/leak-checker";
-// Sharing tools
-import { DeadDrop } from "@/components/tools/dead-drop";
-import { QRGen } from "@/components/tools/qr-gen";
-import { LinkShortener } from "@/components/tools/link-shortener";
-import { Pastebin } from "@/components/tools/pastebin";
-import { ImageHost } from "@/components/tools/image-host";
-import { SecretNote } from "@/components/tools/secret-note";
-import { CodeShare } from "@/components/tools/code-share";
-import { JsonShare } from "@/components/tools/json-share";
-import { CsvShare } from "@/components/tools/csv-share";
-import { PassGen } from "@/components/tools/passgen";
-import { ColorPicker } from "@/components/tools/color-picker";
-import { HashGen } from "@/components/tools/hash-gen";
-import { TextCleaner } from "@/components/tools/text-cleaner";
-import { WordCount } from "@/components/tools/word-count";
-import { DateDiff } from "@/components/tools/date-diff";
-import { EmojiPicker } from "@/components/tools/emoji-picker";
-import { CaseConverter } from "@/components/tools/case-converter";
-import { ImageConverter } from "@/components/tools/image-converter";
-import { FaviconGen } from "@/components/tools/favicon-gen";
-import { BackgroundRemover } from "@/components/tools/bg-remover";
-import { PrivacyStripper } from "@/components/tools/privacy-stripper";
-import { ImageCompressor } from "@/components/tools/image-compressor";
-import { BulkResizer } from "@/components/tools/bulk-resizer";
-import { ImageCropper } from "@/components/tools/image-cropper";
-import { SvgOptimizer } from "@/components/tools/svg-optimizer";
-import { AspectRatioCalc } from "@/components/tools/aspect-ratio-calc";
-import { ColorFromImage } from "@/components/tools/color-from-image";
-import { ImageWatermarker } from "@/components/tools/image-watermarker";
-import { ImageSplitter } from "@/components/tools/image-splitter";
-import { DuplicateRemover } from "@/components/tools/duplicate-remover";
-import { TextReverser } from "@/components/tools/text-reverser";
-import { CharacterMap } from "@/components/tools/character-map";
-import { NumberConverter } from "@/components/tools/number-converter";
-import { UuidGenerator } from "@/components/tools/uuid-generator";
-import { BarcodeGen } from "@/components/tools/barcode-gen";
-import { FakeDataGen } from "@/components/tools/fake-data-gen";
-import { ColorPaletteGen } from "@/components/tools/color-palette-gen";
-import { CreditCardGen } from "@/components/tools/credit-card-gen";
-import { StringGen } from "@/components/tools/string-gen";
-import { IntegerGen } from "@/components/tools/integer-gen";
-import { SequenceGen } from "@/components/tools/sequence-gen";
-import { UsernameGen } from "@/components/tools/username-gen";
-import { BusinessNameGen } from "@/components/tools/business-name-gen";
-import { IbanGen } from "@/components/tools/iban-gen";
-import { MacGen } from "@/components/tools/mac-gen";
-import { ImageBlur } from "@/components/tools/image-blur";
-import { ImageRotate } from "@/components/tools/image-rotate";
-import { ImageFilter } from "@/components/tools/image-filter";
-// New tools
-import { LoremGen } from "@/components/tools/lorem-gen";
-import { Base64Tool } from "@/components/tools/base64-tool";
-import { RegexTester } from "@/components/tools/regex-tester";
-import { TimestampTool } from "@/components/tools/timestamp-tool";
-import { GradientGen } from "@/components/tools/gradient-gen";
-import { GradientText } from "@/components/ui/gradient-text";
-import { FloatingParticles } from "@/components/floating-particles";
+
+const ToolLoading = () => (
+    <div className="w-full text-center text-xs text-muted-foreground">Loading tool...</div>
+);
+
+// IMPORTANT: Order MUST match TOOLS array in tools-config.ts exactly.
+const TOOL_COMPONENTS = [
+    dynamic(() => import("@/components/tools/ip-checker").then((m) => m.IpChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/dns-checker").then((m) => m.DnsChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/whois-checker").then((m) => m.WhoisChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/ssl-checker").then((m) => m.SslChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/ping-checker").then((m) => m.PingChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/useragent-checker").then((m) => m.UserAgentChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/screen-checker").then((m) => m.ScreenChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/cookies-checker").then((m) => m.CookiesChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/webgl-checker").then((m) => m.WebGLChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/password-checker").then((m) => m.PasswordChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/leak-checker").then((m) => m.LeakChecker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/dead-drop").then((m) => m.DeadDrop), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/qr-gen").then((m) => m.QRGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/link-shortener").then((m) => m.LinkShortener), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/pastebin").then((m) => m.Pastebin), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-host").then((m) => m.ImageHost), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/secret-note").then((m) => m.SecretNote), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/code-share").then((m) => m.CodeShare), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/json-share").then((m) => m.JsonShare), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/csv-share").then((m) => m.CsvShare), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/passgen").then((m) => m.PassGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/color-picker").then((m) => m.ColorPicker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/barcode-gen").then((m) => m.BarcodeGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/fake-data-gen").then((m) => m.FakeDataGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/color-palette-gen").then((m) => m.ColorPaletteGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/credit-card-gen").then((m) => m.CreditCardGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/string-gen").then((m) => m.StringGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/integer-gen").then((m) => m.IntegerGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/sequence-gen").then((m) => m.SequenceGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/username-gen").then((m) => m.UsernameGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/business-name-gen").then((m) => m.BusinessNameGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/iban-gen").then((m) => m.IbanGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/mac-gen").then((m) => m.MacGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/privacy-stripper").then((m) => m.PrivacyStripper), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-compressor").then((m) => m.ImageCompressor), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/bulk-resizer").then((m) => m.BulkResizer), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/word-count").then((m) => m.WordCount), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/case-converter").then((m) => m.CaseConverter), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/text-cleaner").then((m) => m.TextCleaner), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/emoji-picker").then((m) => m.EmojiPicker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-converter").then((m) => m.ImageConverter), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/favicon-gen").then((m) => m.FaviconGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/hash-gen").then((m) => m.HashGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/date-diff").then((m) => m.DateDiff), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/duplicate-remover").then((m) => m.DuplicateRemover), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/text-reverser").then((m) => m.TextReverser), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/character-map").then((m) => m.CharacterMap), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/number-converter").then((m) => m.NumberConverter), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/uuid-generator").then((m) => m.UuidGenerator), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/bg-remover").then((m) => m.BackgroundRemover), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-cropper").then((m) => m.ImageCropper), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/svg-optimizer").then((m) => m.SvgOptimizer), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/aspect-ratio-calc").then((m) => m.AspectRatioCalc), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/color-from-image").then((m) => m.ColorFromImage), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-watermarker").then((m) => m.ImageWatermarker), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-splitter").then((m) => m.ImageSplitter), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-blur").then((m) => m.ImageBlur), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-rotate").then((m) => m.ImageRotate), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/image-filter").then((m) => m.ImageFilter), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/lorem-gen").then((m) => m.LoremGen), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/base64-tool").then((m) => m.Base64Tool), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/regex-tester").then((m) => m.RegexTester), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/timestamp-tool").then((m) => m.TimestampTool), { ssr: false, loading: ToolLoading }),
+    dynamic(() => import("@/components/tools/gradient-gen").then((m) => m.GradientGen), { ssr: false, loading: ToolLoading }),
+];
 
 const transition = {
     type: "spring" as const,
     stiffness: 200,
     damping: 30,
-    mass: 1
+    mass: 1,
 };
 
 export default function HomePage() {
     const [showTools, setShowTools] = useState(false);
 
     if (showTools) {
-        // IMPORTANT: Children order MUST match TOOLS array in tools-config.ts exactly!
-        // The carousel uses the index to sync between children and TOOLS array
         return (
             <ToolsCarousel onBack={() => setShowTools(false)}>
-                {/* CHECKER TOOLS (1-12) */}
-                <IpChecker />
-                <DnsChecker />
-                <WhoisChecker />
-                <SslChecker />
-                <PingChecker />
-                <UserAgentChecker />
-                <ScreenChecker />
-                <CookiesChecker />
-                <WebGLChecker />
-                <PasswordChecker />
-                <LeakChecker />
-                {/* SHARING TOOLS (13+) */}
-                <DeadDrop />
-                {/* 2. qr-gen */}
-                <QRGen />
-                {/* 3. link-shortener */}
-                <LinkShortener />
-                {/* 4. pastebin */}
-                <Pastebin />
-                {/* 5. image-host */}
-                <ImageHost />
-                {/* 6. secret-note */}
-                <SecretNote />
-                {/* 7. code-share */}
-                <CodeShare />
-                {/* 8. json-share */}
-                <JsonShare />
-                {/* 9. csv-share */}
-                <CsvShare />
-                {/* 10. passgen */}
-                <PassGen />
-                {/* 4. color */}
-                <ColorPicker />
-                {/* 5. barcode */}
-                <BarcodeGen />
-                {/* 6. fakedata */}
-                <FakeDataGen />
-                {/* 7. palette */}
-                <ColorPaletteGen />
-                {/* 8. testcard */}
-                <CreditCardGen />
-                {/* 9. stringgen */}
-                <StringGen />
-                {/* 10. integergen */}
-                <IntegerGen />
-                {/* 11. sequencegen */}
-                <SequenceGen />
-                {/* 12. usernamegen */}
-                <UsernameGen />
-                {/* 13. businessgen */}
-                <BusinessNameGen />
-                {/* 14. ibangen */}
-                <IbanGen />
-                {/* 15. macgen */}
-                <MacGen />
-                {/* 16. privacy */}
-                <PrivacyStripper />
-                {/* 6. compress */}
-                <ImageCompressor />
-                {/* 7. resize */}
-                <BulkResizer />
-                {/* 8. word-count */}
-                <WordCount />
-                {/* 9. case */}
-                <CaseConverter />
-                {/* 10. text-clean */}
-                <TextCleaner />
-                {/* 11. emoji */}
-                <EmojiPicker />
-                {/* 12. image (convert) */}
-                <ImageConverter />
-                {/* 13. favicon */}
-                <FaviconGen />
-                {/* 14. hash */}
-                <HashGen />
-                {/* 15. date-diff */}
-                <DateDiff />
-                {/* 16. dedup */}
-                <DuplicateRemover />
-                {/* 17. reverse */}
-                <TextReverser />
-                {/* 18. charmap */}
-                <CharacterMap />
-                {/* 19. numconv */}
-                <NumberConverter />
-                {/* 20. uuid */}
-                <UuidGenerator />
-                {/* 21. bg-remove */}
-                <BackgroundRemover />
-                {/* 22. crop */}
-                <ImageCropper />
-                {/* 23. svg-opt */}
-                <SvgOptimizer />
-                {/* 24. ratio */}
-                <AspectRatioCalc />
-                {/* 25. pick-color */}
-                <ColorFromImage />
-                {/* 26. watermark */}
-                <ImageWatermarker />
-                {/* 27. split */}
-                <ImageSplitter />
-                {/* 28. blur */}
-                <ImageBlur />
-                {/* 29. rotate */}
-                <ImageRotate />
-                {/* 30. filter */}
-                <ImageFilter />
-                {/* New tools */}
-                <LoremGen />
-                <Base64Tool />
-                <RegexTester />
-                <TimestampTool />
-                <GradientGen />
+                {TOOL_COMPONENTS.map((ToolComponent, index) => (
+                    <ToolComponent key={index} />
+                ))}
             </ToolsCarousel>
         );
     }
@@ -217,8 +108,6 @@ export default function HomePage() {
                 className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
             >
                 <div className="w-full max-w-sm text-center space-y-8 overflow-visible">
-
-                    {/* Brand - will morph to header */}
                     <motion.div
                         layoutId="page-header"
                         className="space-y-3"
@@ -240,7 +129,6 @@ export default function HomePage() {
                         </motion.p>
                     </motion.div>
 
-                    {/* Enter Button - Premium hover effect */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -256,7 +144,6 @@ export default function HomePage() {
                         </Button>
                     </motion.div>
 
-                    {/* Tagline */}
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

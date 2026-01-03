@@ -107,21 +107,21 @@ export default function DownloadClient() {
                 }),
             });
 
+            const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                const data = await response.json();
                 throw new Error(data.error || "Download failed");
             }
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileInfo.name;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
+            if (!data.downloadUrl) {
+                throw new Error("Download failed");
+            }
 
+            const link = document.createElement("a");
+            link.href = data.downloadUrl as string;
+            link.download = fileInfo.name;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
             setDownloadState("success");
         } catch (err) {
             setDownloadState("error");

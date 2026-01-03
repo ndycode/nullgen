@@ -3,19 +3,34 @@ import crypto from "crypto";
 import { r2Storage } from "@/lib/r2";
 import { logger } from "@/lib/logger";
 import { StorageError, ValidationError, formatErrorResponse } from "@/lib/errors";
-import { CODE_LENGTH } from "@/lib/constants";
+import { CODE_LENGTH, DOWNLOAD_TOKEN_TTL_MINUTES } from "@/lib/constants";
 import { verifyPassword } from "@/lib/passwords";
-import type { FileMetadata } from "@/types";
+import {
+    createDownloadToken,
+    deleteFileById,
+    getFileByCode,
+    updateFileDownloadCount,
+    type FileRecord,
+} from "@/lib/db";
+import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
 
-function jsonResponse(data: Record<string, unknown>, init: ResponseInit = {}) {
+function jsonResponse(
+    data: Record<string, unknown>,
+    init: ResponseInit = {},
+    timings?: Record<string, number>
+) {
+    const headers = {
+        ...NO_STORE_HEADERS,
+        ...(init.headers || {}),
+        ...(timings && Object.keys(timings).length > 0
+            ? { "Server-Timing": formatServerTiming(timings) }
+            : {}),
+    };
     return NextResponse.json(data, {
         ...init,
-        headers: {
-            ...NO_STORE_HEADERS,
-            ...(init.headers || {}),
-        },
+        headers,
     });
 }
 
@@ -23,71 +38,40 @@ function isValidCode(code: string): boolean {
     return code.length === CODE_LENGTH && /^[0-9]+$/.test(code);
 }
 
-function normalizeMetadata(raw: unknown): FileMetadata {
-    if (!raw || typeof raw !== "object") {
-        throw new StorageError("Invalid metadata");
-    }
-    const data = raw as Partial<FileMetadata>;
-
-    const filename = typeof data.filename === "string" ? data.filename : "";
-    const originalName = typeof data.originalName === "string" ? data.originalName : "";
-    const mimeType = typeof data.mimeType === "string" ? data.mimeType : "application/octet-stream";
-    const size = typeof data.size === "number" && Number.isFinite(data.size) ? data.size : 0;
-    const expiresAtRaw = (data as { expiresAt?: unknown }).expiresAt;
-    const expiresAt = expiresAtRaw instanceof Date
-        ? expiresAtRaw.toISOString()
-        : typeof expiresAtRaw === "string"
-            ? expiresAtRaw
-            : "";
-    const maxDownloads = typeof data.maxDownloads === "number" && Number.isFinite(data.maxDownloads)
-        ? data.maxDownloads
-        : -1;
-    const downloadCount = typeof data.downloadCount === "number" && Number.isFinite(data.downloadCount)
-        ? data.downloadCount
-        : 0;
-    const password = typeof data.password === "string" ? data.password : null;
-
-    if (!filename || !originalName || size <= 0 || !expiresAt) {
-        throw new StorageError("Invalid metadata", 500);
-    }
-
-    if (maxDownloads < -1 || downloadCount < 0) {
-        throw new StorageError("Invalid download limits", 500);
-    }
-
-    const expiresDate = new Date(expiresAt);
-    if (Number.isNaN(expiresDate.getTime())) {
-        throw new StorageError("Invalid expiry", 500);
-    }
-
-    return {
-        storageType: data.storageType === "r2" ? "r2" : "r2",
-        filename,
-        originalName,
-        size,
-        mimeType,
-        expiresAt,
-        maxDownloads,
-        downloadCount,
-        password,
-        downloaded: Boolean(data.downloaded),
-    };
-}
-
-async function cleanupExpired(code: string, filename: string): Promise<void> {
+/**
+ * Best-effort cleanup of expired file data.
+ * Logs failures but does not throw - cleanup failures are non-fatal.
+ */
+async function cleanupExpired(
+    record: FileRecord,
+    timings?: Record<string, number>
+): Promise<void> {
     try {
-        await r2Storage.deleteFile(filename);
-        await r2Storage.deleteFile(`${code}.metadata.json`);
+        if (timings) {
+            await withTiming(timings, "db", () => deleteFileById(record.id));
+            const deleteResult = await withTiming(timings, "r2", () => r2Storage.deleteFile(record.storage_key));
+            if (!deleteResult.success) {
+                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+            }
+        } else {
+            await deleteFileById(record.id);
+            const deleteResult = await r2Storage.deleteFile(record.storage_key);
+            if (!deleteResult.success) {
+                logger.warn("R2 cleanup failed (non-fatal)", { code: record.code, error: deleteResult.error });
+            }
+        }
     } catch (error) {
-        logger.exception("Failed to delete expired file", error, { code });
+        logger.exception("Failed to delete expired file", error, { code: record.code });
     }
 }
+
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
 ) {
     const requestId = crypto.randomUUID().slice(0, 8);
+    const timings: Record<string, number> = {};
 
     try {
         const { code } = await params;
@@ -100,37 +84,35 @@ export async function GET(
             throw new StorageError("Storage not configured");
         }
 
-        const fileInfo = await r2Storage.getMetadata(code);
-        if (!fileInfo) {
-            return jsonResponse({ error: "File not found or expired" }, { status: 404 });
+        const record = await withTiming(timings, "db", () => getFileByCode(code));
+        if (!record) {
+            return jsonResponse({ error: "File not found or expired" }, { status: 404 }, timings);
         }
 
-        const metadata = normalizeMetadata(fileInfo);
-        const expiresAt = new Date(metadata.expiresAt);
-
+        const expiresAt = new Date(record.expires_at);
         if (new Date() > expiresAt) {
-            await cleanupExpired(code, metadata.filename);
-            return jsonResponse({ error: "File has expired" }, { status: 410 });
+            await cleanupExpired(record, timings);
+            return jsonResponse({ error: "File has expired" }, { status: 410 }, timings);
         }
 
-        if (metadata.maxDownloads !== -1 && metadata.downloadCount >= metadata.maxDownloads) {
-            await cleanupExpired(code, metadata.filename);
-            return jsonResponse({ error: "Download limit reached" }, { status: 410 });
+        if (record.max_downloads !== -1 && record.download_count >= record.max_downloads) {
+            await cleanupExpired(record, timings);
+            return jsonResponse({ error: "Download limit reached" }, { status: 410 }, timings);
         }
 
         return jsonResponse({
-            name: metadata.originalName,
-            size: metadata.size,
-            expiresAt: metadata.expiresAt,
-            requiresPassword: metadata.password !== null,
-            downloadsRemaining: metadata.maxDownloads === -1
+            name: record.original_name,
+            size: record.size,
+            expiresAt: record.expires_at,
+            requiresPassword: record.password_hash !== null,
+            downloadsRemaining: record.max_downloads === -1
                 ? "unlimited"
-                : Math.max(metadata.maxDownloads - metadata.downloadCount, 0),
-        });
+                : Math.max(record.max_downloads - record.download_count, 0),
+        }, undefined, timings);
     } catch (error) {
         logger.exception("Download metadata error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
-        return jsonResponse({ error: errorMessage }, { status: statusCode });
+        return jsonResponse({ error: errorMessage }, { status: statusCode }, timings);
     }
 }
 
@@ -139,6 +121,7 @@ export async function POST(
     { params }: { params: Promise<{ code: string }> }
 ) {
     const requestId = crypto.randomUUID().slice(0, 8);
+    const timings: Record<string, number> = {};
 
     try {
         const { code } = await params;
@@ -156,80 +139,70 @@ export async function POST(
 
         const maxAttempts = 3;
         let attempt = 0;
-        let metadata: FileMetadata | null = null;
+        let updated: FileRecord | null = null;
         let shouldDelete = false;
 
         while (attempt < maxAttempts) {
-            const record = await r2Storage.getMetadataWithEtag(code);
+            const record = await withTiming(timings, "db", () => getFileByCode(code));
             if (!record) {
-                return jsonResponse({ error: "File not found or expired" }, { status: 404 });
+                return jsonResponse({ error: "File not found or expired" }, { status: 404 }, timings);
             }
 
-            const normalized = normalizeMetadata(record.metadata);
-            const expiresAt = new Date(normalized.expiresAt);
-
+            const expiresAt = new Date(record.expires_at);
             if (new Date() > expiresAt) {
-                await cleanupExpired(code, normalized.filename);
-                return jsonResponse({ error: "File has expired" }, { status: 410 });
+                await cleanupExpired(record, timings);
+                return jsonResponse({ error: "File has expired" }, { status: 410 }, timings);
             }
 
-            if (normalized.maxDownloads !== -1 && normalized.downloadCount >= normalized.maxDownloads) {
-                await cleanupExpired(code, normalized.filename);
-                return jsonResponse({ error: "Download limit reached" }, { status: 410 });
+            if (record.max_downloads !== -1 && record.download_count >= record.max_downloads) {
+                await cleanupExpired(record, timings);
+                return jsonResponse({ error: "Download limit reached" }, { status: 410 }, timings);
             }
 
-            if (normalized.password) {
+            if (record.password_hash) {
                 if (!providedPassword) {
                     return jsonResponse({ error: "Password required" }, { status: 401 });
                 }
-                if (!verifyPassword(providedPassword, normalized.password)) {
+                if (!(await verifyPassword(providedPassword, record.password_hash))) {
                     return jsonResponse({ error: "Incorrect password" }, { status: 403 });
                 }
             }
 
-            const updated: FileMetadata = {
-                ...normalized,
-                downloadCount: normalized.downloadCount + 1,
-                downloaded: true,
-            };
-
-            shouldDelete = updated.maxDownloads !== -1 && updated.downloadCount >= updated.maxDownloads;
-
-            try {
-                await r2Storage.saveMetadata(code, updated, { ifMatch: record.etag });
-                metadata = updated;
+            const nextCount = record.download_count + 1;
+            const result = await withTiming(timings, "db", () =>
+                updateFileDownloadCount(record.id, record.download_count, nextCount)
+            );
+            if (result) {
+                updated = result;
+                shouldDelete = result.max_downloads !== -1 && result.download_count >= result.max_downloads;
                 break;
-            } catch (err) {
-                if (err instanceof StorageError && err.statusCode === 409) {
-                    attempt++;
-                    continue;
-                }
-                throw err;
             }
+
+            attempt += 1;
         }
 
-        if (!metadata) {
-            return jsonResponse({ error: "Download busy, retry" }, { status: 409 });
+        if (!updated) {
+            return jsonResponse({ error: "Download busy, retry" }, { status: 409 }, timings);
         }
 
-        const stream = await r2Storage.downloadStream(metadata.filename);
+        const token = crypto.randomUUID();
+        const tokenExpiresAt = new Date(Date.now() + DOWNLOAD_TOKEN_TTL_MINUTES * 60 * 1000);
+        await withTiming(timings, "db", () => createDownloadToken({
+            token,
+            file_id: updated.id,
+            code: updated.code,
+            delete_after: shouldDelete,
+            expires_at: tokenExpiresAt.toISOString(),
+        }));
 
-        if (shouldDelete) {
-            await r2Storage.deleteFile(metadata.filename);
-            await r2Storage.deleteFile(`${code}.metadata.json`);
-        }
-
-        return new NextResponse(stream, {
-            headers: {
-                ...NO_STORE_HEADERS,
-                "Content-Type": metadata.mimeType || "application/octet-stream",
-                "Content-Disposition": `attachment; filename="${encodeURIComponent(metadata.originalName)}"`,
-                "Content-Length": metadata.size.toString(),
-            },
-        });
+        return jsonResponse({
+            token,
+            downloadUrl: `/api/download/${updated.code}/stream?token=${encodeURIComponent(token)}`,
+            expiresAt: tokenExpiresAt.toISOString(),
+        }, undefined, timings);
     } catch (error) {
         logger.exception("Download error", error, { requestId });
         const { error: errorMessage, statusCode } = formatErrorResponse(error);
-        return jsonResponse({ error: errorMessage }, { status: statusCode });
+        return jsonResponse({ error: errorMessage }, { status: statusCode }, timings);
     }
 }
