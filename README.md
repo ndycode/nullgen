@@ -86,7 +86,8 @@ Visit `http://localhost:3000`
 └── scripts/sql/              # Database migrations
     ├── 001_perf_tables.sql   # Core table schema
     ├── 003_atomic_functions.sql  # Atomic share/upload functions
-    └── 004_check_constraints.sql # Schema CHECK constraints
+    ├── 004_check_constraints.sql # Schema CHECK constraints
+    └── 005_burned_invariant.sql  # Burned state irreversibility
 ```
 
 ## Environment Variables

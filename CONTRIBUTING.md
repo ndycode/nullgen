@@ -57,7 +57,7 @@ Visit `http://localhost:3000` to see the app.
 │   ├── env.ts           # Environment config with validation
 │   ├── errors.ts        # Error classes
 │   ├── logger.ts        # Structured logging
-│   ├── db.ts            # Database operations (Supabase)
+│   ├── db/              # Database layer (domain-split)
 │   ├── r2.ts            # R2 storage service
 │   └── passwords.ts     # Password hashing (scrypt)
 └── types/               # TypeScript type definitions
