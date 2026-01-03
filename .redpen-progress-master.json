@@ -7,7 +7,8 @@
     "core/security/impact-analysis.txt",
     "core/security/state-invariants.txt",
     "core/quality/behavioral-coverage.txt",
-    "core/architecture/operational-health.txt"
+    "core/architecture/operational-health.txt",
+    "core/architecture/system-optimization.txt"
   ],
   "versions": {
     "core/security/api-ergonomics.txt": "1.4.3",
@@ -17,6 +18,7 @@
     "core/security/impact-analysis.txt": "1.4.3",
     "core/security/state-invariants.txt": "1.4.3",
     "core/quality/behavioral-coverage.txt": "1.4.3",
-    "core/architecture/operational-health.txt": "1.4.3"
+    "core/architecture/operational-health.txt": "1.4.3",
+    "core/architecture/system-optimization.txt": "1.4.3"
   }
 }
