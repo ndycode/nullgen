@@ -1,5 +1,10 @@
 import "server-only";
 
+// Defense-in-depth: runtime check to catch misconfiguration
+if (typeof window !== "undefined") {
+    throw new Error("Database module cannot be imported on the client side");
+}
+
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import { performance } from "perf_hooks";
 import { env } from "./env";

@@ -1,8 +1,10 @@
 {
   "completed": [
-    "core/security/api-ergonomics.txt"
+    "core/security/api-ergonomics.txt",
+    "core/security/authorization-boundaries.txt"
   ],
   "versions": {
-    "core/security/api-ergonomics.txt": "1.4.3"
+    "core/security/api-ergonomics.txt": "1.4.3",
+    "core/security/authorization-boundaries.txt": "1.4.3"
   }
 }
