@@ -8,9 +8,10 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CopyButton } from "@/components/ui/copy-button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AlertBanner } from "@/components/ui/alert-banner";
 import {
-    Copy,
-    Check,
     Lock,
     Warning,
     Link as LinkIcon,
@@ -76,7 +77,6 @@ export default function ShareViewerPage() {
     const [loading, setLoading] = useState(true);
     const [password, setPassword] = useState("");
     const [needsPassword, setNeedsPassword] = useState(false);
-    const [copied, setCopied] = useState(false);
     const [shareType, setShareType] = useState<ShareType | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -131,19 +131,14 @@ export default function ShareViewerPage() {
         }
     };
 
-    const copyContent = async () => {
-        if (!data) return;
-        await navigator.clipboard.writeText(data.content);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-    };
+    // copyContent is now handled by CopyButton component
 
     const Icon = data?.type ? TYPE_ICONS[data.type] : shareType ? TYPE_ICONS[shareType] : FileText;
     const label = data?.type
         ? TYPE_LABELS[data.type]
         : shareType
-          ? TYPE_LABELS[shareType]
-          : "Share";
+            ? TYPE_LABELS[shareType]
+            : "Share";
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
@@ -170,9 +165,8 @@ export default function ShareViewerPage() {
                     transition={{ delay: 0.1 }}
                 >
                     {loading ? (
-                        <div className="py-12 flex flex-col items-center gap-3">
-                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-sm text-muted-foreground">Loading share...</p>
+                        <div className="py-12">
+                            <LoadingSpinner size="md" label="Loading share..." />
                         </div>
                     ) : error ? (
                         <div className="py-8 text-center space-y-4">
@@ -336,18 +330,11 @@ export default function ShareViewerPage() {
 
                             {/* Copy button */}
                             {data.type !== "link" && data.type !== "image" && (
-                                <Button
-                                    onClick={copyContent}
-                                    variant="outline"
-                                    className="w-full gap-2"
-                                >
-                                    {copied ? (
-                                        <Check className="w-4 h-4" />
-                                    ) : (
-                                        <Copy className="w-4 h-4" />
-                                    )}
-                                    {copied ? "Copied!" : "Copy content"}
-                                </Button>
+                                <CopyButton
+                                    text={data.content}
+                                    label="Copy content"
+                                    className="w-full"
+                                />
                             )}
                         </div>
                     ) : null}

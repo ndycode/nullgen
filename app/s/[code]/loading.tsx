@@ -1,4 +1,4 @@
-import { Spinner } from "@phosphor-icons/react/dist/ssr";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function ShareLoading() {
     return (
@@ -13,9 +13,8 @@ export default function ShareLoading() {
 
                 {/* Skeleton Content */}
                 <div className="bg-card border rounded-2xl p-6">
-                    <div className="flex flex-col items-center py-8 gap-4">
-                        <Spinner weight="bold" className="w-6 h-6 text-primary animate-spin" />
-                        <p className="text-sm text-muted-foreground">Loading share...</p>
+                    <div className="flex flex-col items-center py-8">
+                        <LoadingSpinner size="md" label="Loading share..." />
                     </div>
                 </div>
 

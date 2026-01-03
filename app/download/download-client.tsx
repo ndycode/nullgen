@@ -7,17 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Input } from "@/components/ui/input";
+import { AlertBanner } from "@/components/ui/alert-banner";
+import { DecorativeBackground } from "@/components/decorative-background";
 import {
     ArrowLeft,
     Download,
     File,
-    Warning,
     CheckCircle,
     Timer,
     HardDrive,
     Info,
+    Warning,
 } from "@phosphor-icons/react";
 import { CODE_LENGTH } from "@/lib/constants";
+import { formatFileSize, formatTimeRemaining } from "@/lib/format";
 
 type DownloadState = "idle" | "loading" | "ready" | "downloading" | "success" | "error";
 
@@ -52,25 +55,7 @@ export default function DownloadClient() {
     const [error, setError] = useState("");
     const [password, setPassword] = useState("");
 
-    const formatFileSize = (bytes: number) => {
-        if (bytes === 0) return "0 Bytes";
-        const k = 1024;
-        const sizes = ["Bytes", "KB", "MB", "GB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-    };
-
-    const formatTimeRemaining = (expiresAt: string) => {
-        const now = new Date();
-        const expires = new Date(expiresAt);
-        const diff = expires.getTime() - now.getTime();
-
-        if (diff <= 0) return "Expired";
-
-        const minutes = Math.floor(diff / 60000);
-        if (minutes < 60) return `${minutes} minutes`;
-        return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-    };
+    // formatFileSize and formatTimeRemaining are now imported from @/lib/format
 
     const checkCode = async (codeToCheck?: string) => {
         const codeValue = codeToCheck ?? code;
@@ -157,11 +142,7 @@ export default function DownloadClient() {
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            {/* Decorative background */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-            </div>
+            <DecorativeBackground />
 
             <div className="relative z-10 w-full max-w-sm">
                 {/* Header */}
@@ -300,12 +281,7 @@ export default function DownloadClient() {
                                 </div>
 
                                 {/* Error Message */}
-                                {error && (
-                                    <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
-                                        <Warning weight="fill" className="w-5 h-5 flex-shrink-0" />
-                                        <p className="text-sm">{error}</p>
-                                    </div>
-                                )}
+                                {error && <AlertBanner>{error}</AlertBanner>}
 
                                 {/* Check Code Button */}
                                 <Button

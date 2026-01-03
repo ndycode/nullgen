@@ -1,13 +1,10 @@
-import { Spinner } from "@phosphor-icons/react/dist/ssr";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { DecorativeBackground } from "@/components/decorative-background";
 
 export default function DownloadLoading() {
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
-            {/* Decorative background */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-            </div>
+            <DecorativeBackground />
 
             <div className="relative z-10 w-full max-w-sm">
                 {/* Skeleton Header */}
@@ -27,9 +24,8 @@ export default function DownloadLoading() {
                         <div className="h-4 w-48 bg-muted rounded skeleton-shimmer" />
                     </div>
 
-                    <div className="flex flex-col items-center py-4 gap-4">
-                        <Spinner weight="bold" className="w-6 h-6 text-primary animate-spin" />
-                        <p className="text-sm text-muted-foreground">Loading download...</p>
+                    <div className="flex flex-col items-center py-4">
+                        <LoadingSpinner size="md" label="Loading download..." />
                     </div>
                 </div>
             </div>

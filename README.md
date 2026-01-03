@@ -26,7 +26,7 @@ A privacy-first toolkit with 64+ browser utilities. All tools run client-side â€
 
 | Layer        | Technology              | Purpose                             |
 | ------------ | ----------------------- | ----------------------------------- |
-| Framework    | Next.js 15 (App Router) | Server/client React with TypeScript |
+| Framework    | Next.js 16 (App Router) | Server/client React with TypeScript |
 | Storage      | Cloudflare R2           | Object storage for file sharing     |
 | Styling      | Tailwind CSS v4         | Utility-first CSS                   |
 | Components   | shadcn/ui               | Accessible UI primitives            |
