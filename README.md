@@ -68,14 +68,18 @@ Visit `http://localhost:3000`
 │   ├── error-boundary.tsx    # Client-side error boundary
 │   ├── animated-background.tsx
 │   └── ui/                   # shadcn + custom components
-└── lib/
-    ├── tools-config.ts       # Tool definitions
-    ├── tool-preferences.ts   # Favorites/recent (localStorage)
-    ├── env.ts                # Environment config with validation
-    ├── db.ts                 # Database operations (Supabase)
-    ├── r2.ts                 # R2 storage service
-    ├── passwords.ts          # Password hashing (scrypt)
-    └── confetti.ts           # Animation utilities
+├── lib/
+│   ├── tools-config.ts       # Tool definitions
+│   ├── tool-preferences.ts   # Favorites/recent (localStorage)
+│   ├── env.ts                # Environment config with validation
+│   ├── db.ts                 # Database operations (Supabase)
+│   ├── r2.ts                 # R2 storage service
+│   ├── passwords.ts          # Password hashing (scrypt)
+│   └── confetti.ts           # Animation utilities
+└── scripts/sql/              # Database migrations
+    ├── 001_perf_tables.sql   # Core table schema
+    ├── 003_atomic_functions.sql  # Atomic share/upload functions
+    └── 004_check_constraints.sql # Schema CHECK constraints
 ```
 
 ## Environment Variables

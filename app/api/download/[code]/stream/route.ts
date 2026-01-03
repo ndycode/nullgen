@@ -97,10 +97,14 @@ export async function GET(
         const stream = await withTiming(timings, "r2", () => r2Storage.downloadStream(record.storage_key));
 
         if (tokenRecord.delete_after) {
+            // NOTE: Delete-after-download is not fully atomic.
+            // If DB delete succeeds but R2 delete fails, R2 object becomes orphaned.
+            // Mitigation: Configure R2 lifecycle rules to auto-delete objects >7 days old.
+            // See: https://developers.cloudflare.com/r2/buckets/object-lifecycles/
             await withTiming(timings, "db", () => deleteFileById(record.id));
             const deleteResult = await withTiming(timings, "r2", () => r2Storage.deleteFile(record.storage_key));
             if (!deleteResult.success) {
-                logger.warn("R2 delete failed after download (non-fatal)", {
+                logger.warn("R2 delete failed after download (non-fatal, relies on lifecycle rules)", {
                     code: record.code,
                     error: deleteResult.error
                 });

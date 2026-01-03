@@ -90,12 +90,23 @@ export async function GET(request: NextRequest) {
             stats.files = expiredFiles.length;
         }
 
-        // 4. Delete expired shares (cascades to share_contents via FK)
+        // 4. Delete expired shares and their share_contents
+        // NOTE: FK is shares.content_id → share_contents(id), so deleting shares
+        // does NOT cascade to share_contents. We must delete share_contents first.
         const { data: expiredShares } = await supabase
             .from("shares")
-            .delete()
-            .lt("expires_at", now)
-            .select("id");
+            .select("id, content_id")
+            .lt("expires_at", now);
+
+        if (expiredShares && expiredShares.length > 0) {
+            // Delete share_contents first (parent records)
+            const contentIds = expiredShares.map(s => s.content_id);
+            await supabase.from("share_contents").delete().in("id", contentIds);
+
+            // Then delete shares (child records)
+            const shareIds = expiredShares.map(s => s.id);
+            await supabase.from("shares").delete().in("id", shareIds);
+        }
         stats.shares = expiredShares?.length ?? 0;
 
         logger.info("Cleanup completed", { stats });

@@ -1,0 +1,16 @@
+name: Cleanup Expired Records
+on:
+  schedule:
+    - cron: '0 * * * *'  # every hour
+  workflow_dispatch: # manual trigger
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call cleanup endpoint
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -X GET "${APP_URL}/api/cron/cleanup" \
+            -H "Authorization: Bearer ${CRON_SECRET}"

@@ -8,7 +8,7 @@ import {
     MAX_SHARE_EXPIRY_MINUTES,
 } from "@/lib/constants";
 import { hashPassword } from "@/lib/passwords";
-import { createShareContent, createShareRecord, deleteShareContent } from "@/lib/db";
+import { createShareAtomic } from "@/lib/db";
 import { formatServerTiming, withTiming } from "@/lib/timing";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
@@ -155,43 +155,39 @@ export async function POST(request: NextRequest) {
             ? await withTiming(timings, "crypto", () => hashPassword(normalizedPassword))
             : null;
 
-        const contentRecord = await withTiming(timings, "db", () =>
-            createShareContent(normalizedContent)
-        );
-
+        // Atomic share creation: share_contents + shares in single transaction
+        // Prevents orphaned share_contents on crash/timeout between inserts
         let code = generateCode();
         let attempts = 0;
         let reserved = false;
 
         while (attempts < 10) {
-            const candidate = await withTiming(timings, "db", () =>
-                createShareRecord({
+            const result = await withTiming(timings, "db", () =>
+                createShareAtomic({
+                    content: normalizedContent,
                     code,
                     type,
-                    content_id: contentRecord.id,
                     original_name: originalName ?? null,
                     mime_type: imageMimeType ?? null,
-                    size: imageSize ? imageSize : null,
+                    size: imageSize || null,
                     language: language ?? null,
                     expires_at: expiresAt.toISOString(),
                     password_hash: passwordHash,
                     burn_after_reading: normalizedBurn,
-                    view_count: 0,
-                    burned: false,
                 })
             );
 
-            if (candidate) {
+            if (result) {
                 reserved = true;
                 break;
             }
 
+            // Code collision - retry with new code
             code = generateCode();
             attempts += 1;
         }
 
         if (!reserved) {
-            await withTiming(timings, "db", () => deleteShareContent(contentRecord.id));
             return jsonResponse({ error: "Failed to generate unique code" }, { status: 500 }, timings);
         }
 

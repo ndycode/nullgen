@@ -476,3 +476,90 @@ export async function getDownloadToken(token: string): Promise<DownloadTokenReco
 
     return data as DownloadTokenRecord | null;
 }
+
+// =============================================================================
+// Atomic Operations (use PostgreSQL functions for transactional safety)
+// =============================================================================
+
+export interface CreateShareAtomicParams {
+    content: string;
+    code: string;
+    type: string;
+    original_name?: string | null;
+    mime_type?: string | null;
+    size?: number | null;
+    language?: string | null;
+    expires_at: string;
+    password_hash?: string | null;
+    burn_after_reading?: boolean;
+}
+
+export interface CreateShareAtomicResult {
+    share_id: string;
+    content_id: string;
+    code: string;
+    created_at: string;
+}
+
+/**
+ * Create a share atomically (share_contents + shares in single transaction).
+ * Uses PostgreSQL function to ensure both inserts succeed or both fail.
+ * Returns null if code collision (caller should retry with new code).
+ */
+export async function createShareAtomic(
+    params: CreateShareAtomicParams
+): Promise<CreateShareAtomicResult | null> {
+    const supabase = getSupabase();
+    const start = performance.now();
+
+    const { data, error } = await supabase.rpc("create_share_atomic", {
+        p_content: params.content,
+        p_code: params.code,
+        p_type: params.type,
+        p_original_name: params.original_name ?? null,
+        p_mime_type: params.mime_type ?? null,
+        p_size: params.size ?? null,
+        p_language: params.language ?? null,
+        p_expires_at: params.expires_at,
+        p_password_hash: params.password_hash ?? null,
+        p_burn_after_reading: params.burn_after_reading ?? false,
+    });
+    logDbTiming("rpc.create_share_atomic", start);
+
+    if (error) {
+        handleDbError(error, "Failed to create share atomically");
+    }
+
+    // RPC returns array of rows, empty if code collision
+    if (!data || data.length === 0) {
+        return null;
+    }
+
+    return data[0] as CreateShareAtomicResult;
+}
+
+/**
+ * Finalize an upload session atomically (move from upload_sessions to file_metadata).
+ * Uses PostgreSQL function to ensure session delete + file create happen together.
+ * Returns null if session expired/not found or duplicate finalization.
+ */
+export async function finalizeUploadAtomic(code: string): Promise<FileRecord | null> {
+    const supabase = getSupabase();
+    const start = performance.now();
+
+    const { data, error } = await supabase.rpc("finalize_upload_atomic", {
+        p_code: code,
+    });
+    logDbTiming("rpc.finalize_upload_atomic", start);
+
+    if (error) {
+        handleDbError(error, "Failed to finalize upload atomically");
+    }
+
+    // RPC returns array of rows, empty if session not found or duplicate
+    if (!data || data.length === 0) {
+        return null;
+    }
+
+    return data[0] as FileRecord;
+}
